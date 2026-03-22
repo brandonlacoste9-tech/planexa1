@@ -41,3 +41,14 @@
 - [x] Create test for payment button visibility
 - [x] Create test for payment success/canceled pages
 - [ ] Run all E2E tests and verify passing
+
+## Notification Enhancements
+
+- [x] Add email notification system (bookings, payments, trial reminders)
+- [x] Add SMS reminder system (24hr and 1hr before appointment)
+- [x] Add voice connection settings and configuration
+- [x] Create notification preferences page
+- [x] Add email templates for all notification types
+- [x] Add notification router to backend
+- [x] Add notification settings route to frontend
+- [ ] Test all notification flows

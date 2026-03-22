@@ -26,6 +26,8 @@ export const users = mysqlTable("users", {
   trialEndsAt: timestamp("trialEndsAt"),
   isTrialActive: mysqlEnum("isTrialActive", ["true", "false"]).default("false").notNull(),
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["trial", "active", "canceled", "expired"]).default("trial").notNull(),
+  // Notification contact info
+  phoneNumber: varchar("phoneNumber", { length: 20 }),
 });
 
 /**
@@ -73,3 +75,50 @@ export const payments = mysqlTable("payments", {
 
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = typeof payments.$inferInsert;
+
+/**
+ * Notification preferences table to track user notification settings.
+ */
+export const notificationPreferences = mysqlTable("notificationPreferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  // Email preferences
+  emailBookingConfirmation: mysqlEnum("emailBookingConfirmation", ["true", "false"]).default("true").notNull(),
+  emailPaymentReceipt: mysqlEnum("emailPaymentReceipt", ["true", "false"]).default("true").notNull(),
+  emailTrialReminder: mysqlEnum("emailTrialReminder", ["true", "false"]).default("true").notNull(),
+  emailAppointmentReminder: mysqlEnum("emailAppointmentReminder", ["true", "false"]).default("true").notNull(),
+  // SMS preferences
+  smsEnabled: mysqlEnum("smsEnabled", ["true", "false"]).default("false").notNull(),
+  smsPhoneNumber: varchar("smsPhoneNumber", { length: 20 }),
+  smsAppointmentReminder24h: mysqlEnum("smsAppointmentReminder24h", ["true", "false"]).default("true").notNull(),
+  smsAppointmentReminder1h: mysqlEnum("smsAppointmentReminder1h", ["true", "false"]).default("true").notNull(),
+  // Voice preferences
+  voiceEnabled: mysqlEnum("voiceEnabled", ["true", "false"]).default("false").notNull(),
+  voicePhoneNumber: varchar("voicePhoneNumber", { length: 20 }),
+  voiceCallReminder: mysqlEnum("voiceCallReminder", ["true", "false"]).default("false").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreferences = typeof notificationPreferences.$inferInsert;
+
+/**
+ * Notification logs table to track sent notifications.
+ */
+export const notificationLogs = mysqlTable("notificationLogs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  type: mysqlEnum("type", ["email", "sms", "voice"]).notNull(),
+  recipient: varchar("recipient", { length: 320 }).notNull(),
+  subject: text("subject"),
+  message: text("message"),
+  status: mysqlEnum("status", ["pending", "sent", "failed", "bounced"]).default("pending").notNull(),
+  externalId: varchar("externalId", { length: 255 }),
+  error: text("error"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  sentAt: timestamp("sentAt"),
+});
+
+export type NotificationLog = typeof notificationLogs.$inferSelect;
+export type InsertNotificationLog = typeof notificationLogs.$inferInsert;

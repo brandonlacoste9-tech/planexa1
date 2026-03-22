@@ -16,6 +16,7 @@ import BookingPage from "./pages/Booking";
 import PaymentsPage from "./pages/Payments";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCanceled from "./pages/PaymentCanceled";
+import NotificationSettings from "./pages/NotificationSettings";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/payments" component={PaymentsPage} />
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/payment-canceled" component={PaymentCanceled} />
+      <Route path="/notification-settings" component={NotificationSettings} />
       <Route path="/book/:slug" component={BookingPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
