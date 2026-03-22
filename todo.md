@@ -20,3 +20,14 @@
 - [x] Highlight paid services with visual indicators
 - [x] Add payment summary banner in confirmation step
 - [x] Show "No payment required" for free services
+
+## 7-Day Free Trial Feature
+
+- [x] Update database schema with trial tracking fields
+- [x] Add trial start date and expiration logic
+- [x] Create trial status checker in backend
+- [x] Update booking confirmation to start trial
+- [x] Add trial badge to confirmation page
+- [x] Show trial countdown in dashboard
+- [x] Create payment reminder before trial expires
+- [ ] Block access after trial expires without payment

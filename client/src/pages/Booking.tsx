@@ -417,6 +417,7 @@ function ConfirmationStep({
   onBookAnother,
   onPaymentClick,
   isProcessing,
+  trialDaysRemaining,
 }: {
   service: AppointmentType;
   date: Date;
@@ -426,6 +427,7 @@ function ConfirmationStep({
   onBookAnother: () => void;
   onPaymentClick: () => void;
   isProcessing: boolean;
+  trialDaysRemaining?: number;
 }) {
   return (
     <div className="text-center">
@@ -443,6 +445,25 @@ function ConfirmationStep({
       >
         You're all set!
       </h2>
+      {trialDaysRemaining !== undefined && trialDaysRemaining > 0 && (
+        <div
+          className="rounded-xl p-4 mb-6"
+          style={{ backgroundColor: '#D8F3DC', border: '2px solid #2D6A4F' }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <span style={{ fontSize: '18px' }}>🎁</span>
+            <span
+              className="font-semibold text-sm"
+              style={{ color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}
+            >
+              7-Day Free Trial Active
+            </span>
+          </div>
+          <p className="text-xs" style={{ color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}>
+            You have <strong>{trialDaysRemaining} days</strong> of free access. Payment will be required after the trial ends.
+          </p>
+        </div>
+      )}
       <p className="text-sm mb-6" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
         A confirmation has been sent to your email.
       </p>
@@ -484,34 +505,53 @@ function ConfirmationStep({
       </div>
 
       <div className="space-y-2">
-        {service.price_cents > 0 && (
-          <button
-            onClick={onPaymentClick}
-            disabled={isProcessing}
-            className="w-full py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
-            style={{
-              backgroundColor: '#2D6A4F',
-              color: 'white',
-              fontFamily: 'DM Sans, sans-serif',
-              opacity: isProcessing ? 0.7 : 1,
-              cursor: isProcessing ? 'not-allowed' : 'pointer',
-            }}
-            onMouseEnter={e => !isProcessing && (e.currentTarget.style.backgroundColor = '#40916C')}
-            onMouseLeave={e => !isProcessing && (e.currentTarget.style.backgroundColor = '#2D6A4F')}
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 size={14} className="animate-spin" />
-                Processing Payment...
-              </>
-            ) : (
-              <>
-                <DollarSign size={14} />
-                Complete Payment
-              </>
-            )}
-          </button>
-        )}
+          {service.price_cents > 0 && trialDaysRemaining !== undefined && trialDaysRemaining > 0 ? (
+            <div className="text-center">
+              <p className="text-xs mb-3" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
+                Your trial is active. Payment will be required after {trialDaysRemaining} days.
+              </p>
+              <button
+                onClick={onBookAnother}
+                className="w-full py-2.5 rounded-xl text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: '#2D6A4F',
+                  color: 'white',
+                  fontFamily: 'DM Sans, sans-serif',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+              >
+                Continue to Dashboard
+              </button>
+            </div>
+          ) : service.price_cents > 0 ? (
+            <button
+              onClick={onPaymentClick}
+              disabled={isProcessing}
+              className="w-full py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              style={{
+                backgroundColor: '#2D6A4F',
+                color: 'white',
+                fontFamily: 'DM Sans, sans-serif',
+                opacity: isProcessing ? 0.7 : 1,
+                cursor: isProcessing ? 'not-allowed' : 'pointer',
+              }}
+              onMouseEnter={e => !isProcessing && (e.currentTarget.style.backgroundColor = '#40916C')}
+              onMouseLeave={e => !isProcessing && (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Processing Payment...
+                </>
+              ) : (
+                <>
+                  <DollarSign size={14} />
+                  Complete Payment
+                </>
+              )}
+            </button>
+          ) : null}
         <a
           href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(service.name + ' with ' + businessInfo.name)}&dates=${date.toISOString().split('T')[0].replace(/-/g, '')}T${time.replace(':', '')}00/${date.toISOString().split('T')[0].replace(/-/g, '')}T${time.replace(':', '')}00`}
           target="_blank"
@@ -582,8 +622,21 @@ export default function BookingPage() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', email: '', phone: '', notes: '' });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [trialDaysRemaining, setTrialDaysRemaining] = useState<number | undefined>(undefined);
 
   const checkoutMutation = trpc.stripe.createCheckoutSession.useMutation();
+  const startTrialMutation = trpc.stripe.startTrial.useMutation();
+
+  // Start trial when user reaches confirmation
+  const handleStartTrial = async () => {
+    try {
+      await startTrialMutation.mutateAsync();
+      setTrialDaysRemaining(7);
+    } catch (error) {
+      console.error('Trial start error:', error);
+      // Continue anyway if trial start fails
+    }
+  };
 
   const handleReset = () => {
     setStep('service');
@@ -593,11 +646,13 @@ export default function BookingPage() {
     setForm({ name: '', email: '', phone: '', notes: '' });
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!form.name || !form.email) {
       toast.error('Please fill in your name and email.');
       return;
     }
+    // Start trial when reaching confirmation
+    await handleStartTrial();
     setStep('confirmation');
   };
 
@@ -715,6 +770,7 @@ export default function BookingPage() {
               onBookAnother={handleReset}
               onPaymentClick={handlePaymentClick}
               isProcessing={isProcessing}
+              trialDaysRemaining={trialDaysRemaining}
             />
           )}
         </div>

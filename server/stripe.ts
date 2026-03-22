@@ -13,10 +13,63 @@ import {
   getPaymentByStripePaymentIntentId,
 } from './db';
 import { TRPCError } from '@trpc/server';
+import { startUserTrial, getTrialStatus as getTrialStatusHelper, upgradeToPaidSubscription } from './trial';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 export const stripeRouter = router({
+  /**
+   * Start a free trial for a new user
+   */
+  startTrial: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      const user = ctx.user;
+      if (!user) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        });
+      }
+
+      await startUserTrial(user.id);
+
+      return {
+        success: true,
+        message: 'Trial started successfully',
+      };
+    } catch (error) {
+      console.error('[Trial] Error starting trial:', error);
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to start trial',
+      });
+    }
+  }),
+
+  /**
+   * Get current trial status for user
+   */
+  getTrialStatus: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const user = ctx.user;
+      if (!user) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        });
+      }
+
+      const status = await getTrialStatusHelper(user.id);
+      return status;
+    } catch (error) {
+      console.error('[Trial] Error getting trial status:', error);
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to get trial status',
+      });
+    }
+  }),
+
   /**
    * Create a Stripe checkout session for an appointment
    */
