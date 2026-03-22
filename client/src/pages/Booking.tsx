@@ -40,75 +40,155 @@ function getMonthDates(year: number, month: number) {
   return { firstDay, daysInMonth, startOffset };
 }
 
-// Step 1: Service Selection
+// Step 1: Service Selection (IMPROVED with clear paid/free indicators)
 function ServiceStep({
   onSelect,
 }: {
   onSelect: (type: AppointmentType) => void;
 }) {
   const activeTypes = appointmentTypes.filter(t => t.is_active);
+  const paidServices = activeTypes.filter(t => t.price_cents > 0);
+  const freeServices = activeTypes.filter(t => t.price_cents === 0);
 
   return (
-    <div className="space-y-3">
-      <h2
-        className="text-lg font-medium mb-4"
-        style={{ fontFamily: 'DM Sans, sans-serif', color: '#1E293B' }}
-      >
-        Select a service
-      </h2>
-      {activeTypes.map(type => (
-        <button
-          key={type.id}
-          onClick={() => onSelect(type)}
-          className="w-full text-left rounded-xl p-4 transition-all"
-          style={{
-            border: '1px solid #E8E0D0',
-            backgroundColor: 'white',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = type.color_hex;
-            e.currentTarget.style.boxShadow = `0 2px 12px ${type.color_hex}20`;
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = '#E8E0D0';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+    <div className="space-y-5">
+      <div>
+        <h2
+          className="text-lg font-medium mb-2"
+          style={{ fontFamily: 'DM Sans, sans-serif', color: '#1E293B' }}
         >
-          <div className="flex items-start gap-3">
-            <div
-              className="w-3 h-3 rounded-full mt-1 shrink-0"
-              style={{ backgroundColor: type.color_hex }}
-            />
-            <div className="flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <span
-                  className="font-semibold text-sm"
-                  style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}
-                >
-                  {type.name}
-                </span>
-                <span
-                  className="text-sm font-medium"
-                  style={{ fontFamily: 'Fraunces, serif', color: type.color_hex }}
-                >
-                  {formatPrice(type.price_cents)}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="flex items-center gap-1 text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                  <Clock size={11} />
-                  {formatDuration(type.duration_minutes)}
-                </span>
-              </div>
-              {type.description && (
-                <p className="text-xs mt-1.5" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                  {type.description}
-                </p>
-              )}
-            </div>
+          Select a service
+        </h2>
+        <p className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
+          💳 = Payment required | 🎁 = Free
+        </p>
+      </div>
+
+      {/* Paid Services Section */}
+      {paidServices.length > 0 && (
+        <div>
+          <div className="text-xs font-semibold mb-3" style={{ color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}>
+            💳 PAID SERVICES
           </div>
-        </button>
-      ))}
+          <div className="space-y-3">
+            {paidServices.map(type => (
+              <button
+                key={type.id}
+                onClick={() => onSelect(type)}
+                className="w-full text-left rounded-xl p-4 transition-all"
+                style={{
+                  border: `2px solid ${type.color_hex}`,
+                  backgroundColor: type.color_hex + '08',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.boxShadow = `0 4px 16px ${type.color_hex}25`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className="w-3 h-3 rounded-full mt-1 shrink-0"
+                    style={{ backgroundColor: type.color_hex }}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span
+                        className="font-semibold text-sm"
+                        style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}
+                      >
+                        {type.name}
+                      </span>
+                      <span
+                        className="px-2 py-1 rounded-full text-xs font-semibold"
+                        style={{ backgroundColor: type.color_hex, color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+                      >
+                        {formatPrice(type.price_cents)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="flex items-center gap-1 text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
+                        <Clock size={11} />
+                        {formatDuration(type.duration_minutes)}
+                      </span>
+                    </div>
+                    {type.description && (
+                      <p className="text-xs mt-1.5" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
+                        {type.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Free Services Section */}
+      {freeServices.length > 0 && (
+        <div>
+          <div className="text-xs font-semibold mb-3" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
+            🎁 FREE SERVICES
+          </div>
+          <div className="space-y-3">
+            {freeServices.map(type => (
+              <button
+                key={type.id}
+                onClick={() => onSelect(type)}
+                className="w-full text-left rounded-xl p-4 transition-all"
+                style={{
+                  border: '1px solid #E8E0D0',
+                  backgroundColor: 'white',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = type.color_hex;
+                  e.currentTarget.style.boxShadow = `0 2px 12px ${type.color_hex}20`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = '#E8E0D0';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className="w-3 h-3 rounded-full mt-1 shrink-0"
+                    style={{ backgroundColor: type.color_hex }}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className="font-semibold text-sm"
+                        style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}
+                      >
+                        {type.name}
+                      </span>
+                      <span
+                        className="text-xs font-semibold px-2 py-1 rounded-full"
+                        style={{ backgroundColor: '#D8F3DC', color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}
+                      >
+                        FREE
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="flex items-center gap-1 text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
+                        <Clock size={11} />
+                        {formatDuration(type.duration_minutes)}
+                      </span>
+                    </div>
+                    {type.description && (
+                      <p className="text-xs mt-1.5" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
+                        {type.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -121,108 +201,92 @@ function DateStep({
   selectedDate: Date | null;
   onSelect: (date: Date) => void;
 }) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const [viewMonth, setViewMonth] = useState(new Date(today));
-
-  const year = viewMonth.getFullYear();
-  const month = viewMonth.getMonth();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
   const { daysInMonth, startOffset } = getMonthDates(year, month);
-  const monthName = viewMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const dates = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const emptySlots = Array.from({ length: startOffset }, (_, i) => null);
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(new Date(year, month - 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(new Date(year, month + 1));
+  };
 
   return (
-    <div>
+    <div className="space-y-3">
       <h2
-        className="text-lg font-medium mb-4"
+        className="text-lg font-medium"
         style={{ fontFamily: 'DM Sans, sans-serif', color: '#1E293B' }}
       >
-        Select a date
+        Pick a date
       </h2>
-      <div className="planexa-card p-4">
-        {/* Month navigation */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => setViewMonth(new Date(year, month - 1))}
-            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
-            style={{ color: '#64748B' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <span
-            className="font-medium text-sm"
-            style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}
-          >
-            {monthName}
-          </span>
-          <button
-            onClick={() => setViewMonth(new Date(year, month + 1))}
-            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
-            style={{ color: '#64748B' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
 
-        {/* Day headers */}
-        <div className="grid grid-cols-7 mb-2">
-          {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
-            <div
-              key={d}
-              className="text-center text-xs font-medium py-1"
-              style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}
-            >
-              {d}
-            </div>
-          ))}
-        </div>
-
-        {/* Days */}
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: startOffset }).map((_, i) => <div key={`e-${i}`} />)}
-          {Array.from({ length: daysInMonth }, (_, i) => {
-            const day = i + 1;
-            const date = new Date(year, month, day);
-            const isPast = date < today;
-            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-            const isUnavailable = isPast || isWeekend;
-            const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
-            const isToday = date.toDateString() === today.toDateString();
-
-            return (
-              <button
-                key={day}
-                disabled={isUnavailable}
-                onClick={() => onSelect(date)}
-                className="aspect-square flex items-center justify-center rounded-lg text-sm transition-all"
-                style={{
-                  fontFamily: 'DM Sans, sans-serif',
-                  backgroundColor: isSelected ? '#2D6A4F' : isToday ? '#D8F3DC' : 'transparent',
-                  color: isSelected ? 'white' : isUnavailable ? '#CBD5E1' : isToday ? '#2D6A4F' : '#1E293B',
-                  cursor: isUnavailable ? 'not-allowed' : 'pointer',
-                  fontWeight: isToday ? 600 : 400,
-                }}
-                onMouseEnter={e => {
-                  if (!isUnavailable && !isSelected) e.currentTarget.style.backgroundColor = '#D8F3DC';
-                }}
-                onMouseLeave={e => {
-                  if (!isUnavailable && !isSelected) e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                {day}
-              </button>
-            );
-          })}
-        </div>
+      {/* Month Navigation */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={handlePrevMonth}
+          className="p-1 rounded transition-colors"
+          style={{ color: '#2D6A4F' }}
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <span
+          className="text-sm font-semibold"
+          style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}
+        >
+          {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+        </span>
+        <button
+          onClick={handleNextMonth}
+          className="p-1 rounded transition-colors"
+          style={{ color: '#2D6A4F' }}
+        >
+          <ChevronRight size={18} />
+        </button>
       </div>
-      {selectedDate && (
-        <p className="text-sm mt-3 text-center" style={{ color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}>
-          ✓ {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} selected
-        </p>
-      )}
+
+      {/* Calendar Grid */}
+      <div
+        className="grid grid-cols-7 gap-1"
+        style={{ fontSize: '11px', color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}
+      >
+        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+          <div key={day} className="text-center font-semibold py-1">
+            {day}
+          </div>
+        ))}
+        {emptySlots.map((_, i) => (
+          <div key={`empty-${i}`} />
+        ))}
+        {dates.map(day => {
+          const date = new Date(year, month, day);
+          const isSelected = selectedDate && selectedDate.toDateString() === date.toDateString();
+          const isPast = date < new Date();
+
+          return (
+            <button
+              key={day}
+              onClick={() => !isPast && onSelect(date)}
+              disabled={isPast}
+              className="py-2 rounded text-xs font-medium transition-all"
+              style={{
+                backgroundColor: isSelected ? '#2D6A4F' : isPast ? '#F3F4F6' : 'white',
+                color: isSelected ? 'white' : isPast ? '#CBD5E1' : '#1E293B',
+                border: isSelected ? 'none' : '1px solid #E8E0D0',
+                cursor: isPast ? 'not-allowed' : 'pointer',
+                opacity: isPast ? 0.5 : 1,
+              }}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -236,46 +300,33 @@ function TimeStep({
   onSelect: (time: string) => void;
 }) {
   return (
-    <div>
+    <div className="space-y-3">
       <h2
-        className="text-lg font-medium mb-4"
+        className="text-lg font-medium"
         style={{ fontFamily: 'DM Sans, sans-serif', color: '#1E293B' }}
       >
-        Select a time
+        Pick a time
       </h2>
       <div className="grid grid-cols-3 gap-2">
-        {TIME_SLOTS.map(slot => {
-          const isBooked = BOOKED_SLOTS.includes(slot);
-          const isSelected = selectedTime === slot;
+        {TIME_SLOTS.map(time => {
+          const isBooked = BOOKED_SLOTS.includes(time);
+          const isSelected = selectedTime === time;
 
           return (
             <button
-              key={slot}
+              key={time}
+              onClick={() => !isBooked && onSelect(time)}
               disabled={isBooked}
-              onClick={() => onSelect(slot)}
-              className="py-2.5 rounded-lg text-sm font-medium transition-all"
+              className="py-2 rounded text-xs font-medium transition-all"
               style={{
-                fontFamily: 'DM Sans, sans-serif',
-                backgroundColor: isSelected ? '#2D6A4F' : isBooked ? '#F1F5F9' : 'white',
-                color: isSelected ? 'white' : isBooked ? '#CBD5E1' : '#1E293B',
-                border: isSelected ? '1px solid #2D6A4F' : '1px solid #E8E0D0',
+                backgroundColor: isSelected ? '#2D6A4F' : isBooked ? '#FEE2E2' : 'white',
+                color: isSelected ? 'white' : isBooked ? '#991B1B' : '#1E293B',
+                border: isSelected ? 'none' : isBooked ? '1px solid #FECACA' : '1px solid #E8E0D0',
                 cursor: isBooked ? 'not-allowed' : 'pointer',
-                textDecoration: isBooked ? 'line-through' : 'none',
-              }}
-              onMouseEnter={e => {
-                if (!isBooked && !isSelected) {
-                  e.currentTarget.style.backgroundColor = '#D8F3DC';
-                  e.currentTarget.style.borderColor = '#52B788';
-                }
-              }}
-              onMouseLeave={e => {
-                if (!isBooked && !isSelected) {
-                  e.currentTarget.style.backgroundColor = 'white';
-                  e.currentTarget.style.borderColor = '#E8E0D0';
-                }
+                opacity: isBooked ? 0.6 : 1,
               }}
             >
-              {formatTime12h(slot)}
+              {formatTime12h(time)}
             </button>
           );
         })}
@@ -293,7 +344,7 @@ function DetailsStep({
   onChange: (field: string, value: string) => void;
 }) {
   return (
-    <div>
+    <div className="space-y-4">
       <h2
         className="text-lg font-medium mb-4"
         style={{ fontFamily: 'DM Sans, sans-serif', color: '#1E293B' }}
@@ -613,152 +664,108 @@ export default function BookingPage() {
         </div>
 
         {/* Progress Indicator */}
-        {step !== 'confirmation' && (
-          <div className="flex items-center justify-center gap-2 mb-6">
-            {['service', 'date', 'time', 'details'].map((s, i) => {
-              const idx = stepOrder.indexOf(s as Step);
-              const isDone = currentStepIdx > idx;
-              const isCurrent = step === s;
-              return (
-                <div key={s} className="flex items-center gap-2">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all"
-                    style={{
-                      backgroundColor: isDone ? '#2D6A4F' : isCurrent ? '#D8F3DC' : '#E8E0D0',
-                      color: isDone ? 'white' : isCurrent ? '#2D6A4F' : '#94A3B8',
-                      fontFamily: 'DM Sans, sans-serif',
-                    }}
-                  >
-                    {isDone ? <Check size={12} /> : i + 1}
-                  </div>
-                  {i < 3 && (
-                    <div
-                      className="w-8 h-px"
-                      style={{ backgroundColor: isDone ? '#2D6A4F' : '#E8E0D0' }}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Main Card */}
-        <div className="planexa-card-lg p-6">
-          {/* Back button */}
-          {step !== 'service' && step !== 'confirmation' && (
-            <button
-              onClick={() => {
-                const idx = stepOrder.indexOf(step);
-                setStep(stepOrder[idx - 1]);
+        <div className="flex gap-1 mb-8 justify-center">
+          {stepOrder.map((s, idx) => (
+            <div
+              key={s}
+              className="h-1 rounded-full transition-all"
+              style={{
+                width: idx <= currentStepIdx ? '24px' : '8px',
+                backgroundColor: idx <= currentStepIdx ? '#2D6A4F' : '#E8E0D0',
               }}
-              className="flex items-center gap-1 text-sm mb-4 transition-colors"
-              style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#2D6A4F')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}
-            >
-              <ChevronLeft size={14} />
-              Back
-            </button>
+            />
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <div
+          className="rounded-2xl p-6 mb-6"
+          style={{ backgroundColor: 'white', border: '1px solid #E8E0D0' }}
+        >
+          {step === 'service' && <ServiceStep onSelect={(type) => { setSelectedService(type); setStep('date'); }} />}
+
+          {step === 'date' && selectedService && (
+            <>
+              <SummaryBar service={selectedService} />
+              <DateStep selectedDate={selectedDate} onSelect={(date) => { setSelectedDate(date); setStep('time'); }} />
+            </>
           )}
 
-          {/* Service Summary Bar */}
-          {selectedService && step !== 'service' && step !== 'confirmation' && (
-            <SummaryBar
+          {step === 'time' && selectedService && (
+            <>
+              <SummaryBar service={selectedService} date={selectedDate} />
+              <TimeStep selectedTime={selectedTime} onSelect={(time) => { setSelectedTime(time); setStep('details'); }} />
+            </>
+          )}
+
+          {step === 'details' && selectedService && (
+            <>
+              <SummaryBar service={selectedService} date={selectedDate} time={selectedTime} />
+              <DetailsStep form={form} onChange={(field, value) => setForm({ ...form, [field]: value })} />
+            </>
+          )}
+
+          {step === 'confirmation' && selectedService && selectedDate && selectedTime && (
+            <ConfirmationStep
               service={selectedService}
-              date={step === 'time' || step === 'details' ? selectedDate : null}
-              time={step === 'details' ? selectedTime : null}
+              date={selectedDate}
+              time={selectedTime}
+              clientName={form.name}
+              clientEmail={form.email}
+              onBookAnother={handleReset}
+              onPaymentClick={handlePaymentClick}
+              isProcessing={isProcessing}
             />
           )}
+        </div>
 
-          {/* Step Content */}
-          {step === 'service' && (
-            <ServiceStep onSelect={type => { setSelectedService(type); setStep('date'); }} />
-          )}
-
-          {step === 'date' && (
-            <>
-              <DateStep selectedDate={selectedDate} onSelect={setSelectedDate} />
+        {/* Navigation Buttons */}
+        {step !== 'confirmation' && (
+          <div className="flex gap-3">
+            {currentStepIdx > 0 && (
               <button
-                disabled={!canProceedDate}
-                onClick={() => setStep('time')}
-                className="w-full mt-5 py-3 rounded-xl text-sm font-medium transition-colors"
+                onClick={() => setStep(stepOrder[currentStepIdx - 1])}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors"
                 style={{
-                  backgroundColor: canProceedDate ? '#2D6A4F' : '#E8E0D0',
-                  color: canProceedDate ? 'white' : '#94A3B8',
+                  border: '1px solid #E8E0D0',
+                  color: '#475569',
                   fontFamily: 'DM Sans, sans-serif',
-                  cursor: canProceedDate ? 'pointer' : 'not-allowed',
+                  backgroundColor: 'white',
                 }}
-                onMouseEnter={e => { if (canProceedDate) e.currentTarget.style.backgroundColor = '#40916C'; }}
-                onMouseLeave={e => { if (canProceedDate) e.currentTarget.style.backgroundColor = '#2D6A4F'; }}
               >
-                Continue →
+                Back
               </button>
-            </>
-          )}
-
-          {step === 'time' && (
-            <>
-              <TimeStep selectedTime={selectedTime} onSelect={setSelectedTime} />
-              <button
-                disabled={!canProceedTime}
-                onClick={() => setStep('details')}
-                className="w-full mt-5 py-3 rounded-xl text-sm font-medium transition-colors"
-                style={{
-                  backgroundColor: canProceedTime ? '#2D6A4F' : '#E8E0D0',
-                  color: canProceedTime ? 'white' : '#94A3B8',
-                  fontFamily: 'DM Sans, sans-serif',
-                  cursor: canProceedTime ? 'pointer' : 'not-allowed',
-                }}
-                onMouseEnter={e => { if (canProceedTime) e.currentTarget.style.backgroundColor = '#40916C'; }}
-                onMouseLeave={e => { if (canProceedTime) e.currentTarget.style.backgroundColor = '#2D6A4F'; }}
-              >
-                Continue →
-              </button>
-            </>
-          )}
-
-          {step === 'details' && (
-            <>
-              <DetailsStep
-                form={form}
-                onChange={(field, value) => setForm(f => ({ ...f, [field]: value }))}
-              />
-              <button
-                onClick={handleConfirm}
-                className="w-full mt-5 py-3 rounded-xl text-sm font-medium transition-colors"
-                style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
-              >
-                Confirm Booking
-              </button>
-            </>
-          )}
-
-        {step === 'confirmation' && selectedService && selectedDate && selectedTime && (
-          <ConfirmationStep
-            service={selectedService}
-            date={selectedDate}
-            time={selectedTime}
-            clientName={form.name}
-            clientEmail={form.email}
-            onBookAnother={handleReset}
-            onPaymentClick={handlePaymentClick}
-            isProcessing={isProcessing}
-          />
+            )}
+            <button
+              onClick={() => {
+                if (step === 'service') return;
+                if (step === 'date' && !canProceedDate) {
+                  toast.error('Please select a date');
+                  return;
+                }
+                if (step === 'time' && !canProceedTime) {
+                  toast.error('Please select a time');
+                  return;
+                }
+                if (step === 'details') {
+                  handleConfirm();
+                  return;
+                }
+              }}
+              disabled={step === 'service' || (step === 'date' && !canProceedDate) || (step === 'time' && !canProceedTime)}
+              className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              style={{
+                backgroundColor: '#2D6A4F',
+                color: 'white',
+                fontFamily: 'DM Sans, sans-serif',
+                opacity: (step === 'service' || (step === 'date' && !canProceedDate) || (step === 'time' && !canProceedTime)) ? 0.5 : 1,
+                cursor: (step === 'service' || (step === 'date' && !canProceedDate) || (step === 'time' && !canProceedTime)) ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {step === 'details' ? 'Review Booking' : 'Continue'}
+            </button>
+          </div>
         )}
-        </div>
-
-        {/* Footer */}
-        <div className="text-center mt-6">
-          <span className="text-xs" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>
-            Powered by{' '}
-            <span style={{ fontFamily: 'Fraunces, serif', color: '#2D6A4F', fontStyle: 'italic' }}>
-              planexa
-            </span>
-          </span>
-        </div>
       </div>
     </div>
   );

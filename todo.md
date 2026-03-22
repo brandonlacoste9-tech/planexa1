@@ -13,3 +13,10 @@
 - [x] Add payment routes to App.tsx
 - [ ] Test with Stripe test card (4242 4242 4242 4242)
 - [ ] Claim Stripe sandbox and configure live keys
+
+## UX Improvements
+
+- [x] Add clear paid/free badges to service selection
+- [x] Highlight paid services with visual indicators
+- [x] Add payment summary banner in confirmation step
+- [x] Show "No payment required" for free services
