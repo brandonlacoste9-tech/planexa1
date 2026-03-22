@@ -13,8 +13,8 @@ import ClientsPage from "./pages/Clients";
 import AnalyticsPage from "./pages/Analytics";
 import SettingsPage from "./pages/Settings";
 import BookingPage from "./pages/Booking";
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path="/" component={Home} />

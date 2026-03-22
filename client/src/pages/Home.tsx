@@ -2,6 +2,7 @@
 // Design: Refined Enterprise Elegance — Fraunces + DM Sans, Forest Green + Cream
 // Hero with generated background image, feature sections, pricing, CTA
 
+import { useAuth } from '@/_core/hooks/useAuth';
 import { Link } from 'wouter';
 import { Calendar, Users, BarChart2, Settings, ArrowRight, Check, Star } from 'lucide-react';
 
@@ -85,8 +86,10 @@ const pricingPlans = [
 ];
 
 export default function Home() {
+  const { user, loading, error, isAuthenticated, logout } = useAuth();
+
   return (
-    <div style={{ backgroundColor: '#FAF7F2', fontFamily: 'DM Sans, sans-serif' }}>
+    <div style={{ backgroundColor: '#FAF7F2', fontFamily: 'DM Sans, sans-serif', minHeight: '100vh' }}>
       {/* Navigation */}
       <nav
         className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center px-6"
@@ -117,22 +120,45 @@ export default function Home() {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            href="/calendar"
-            className="text-sm px-3 py-1.5 rounded-md transition-colors"
-            style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/calendar"
-            className="text-sm px-3 py-1.5 rounded-md transition-colors"
-            style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
-          >
-            Get Started
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                href="/calendar"
+                className="text-sm px-3 py-1.5 rounded-md transition-colors"
+                style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={() => logout()}
+                className="text-sm px-3 py-1.5 rounded-md transition-colors"
+                style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#52B788')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#94A3B8')}
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/calendar"
+                className="text-sm px-3 py-1.5 rounded-md transition-colors"
+                style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/calendar"
+                className="text-sm px-3 py-1.5 rounded-md transition-colors"
+                style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
