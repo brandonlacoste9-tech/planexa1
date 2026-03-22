@@ -1,0 +1,60 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: Booking available
+      - heading "Jordan Mitchell Consulting" [level=1] [ref=e8]
+      - paragraph [ref=e9]: Strategic consulting and advisory services for growing businesses.
+      - generic [ref=e10]:
+        - img [ref=e11]
+        - text: America/Toronto
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - heading "Select a service" [level=2] [ref=e23]
+        - paragraph [ref=e24]: 💳 = Payment required | 🎁 = Free
+      - generic [ref=e25]:
+        - generic [ref=e26]: 💳 PAID SERVICES
+        - generic [ref=e27]:
+          - button "Strategy Call $200 1h Deep-dive strategic planning session to align on goals and roadmap." [ref=e28] [cursor=pointer]:
+            - generic [ref=e31]:
+              - generic [ref=e32]:
+                - generic [ref=e33]: Strategy Call
+                - generic [ref=e34]: $200
+              - generic [ref=e36]:
+                - img [ref=e37]
+                - text: 1h
+              - paragraph [ref=e40]: Deep-dive strategic planning session to align on goals and roadmap.
+          - button "Follow-up $120 45m Progress check-in and next steps review." [ref=e41] [cursor=pointer]:
+            - generic [ref=e44]:
+              - generic [ref=e45]:
+                - generic [ref=e46]: Follow-up
+                - generic [ref=e47]: $120
+              - generic [ref=e49]:
+                - img [ref=e50]
+                - text: 45m
+              - paragraph [ref=e53]: Progress check-in and next steps review.
+          - button "Workshop $350 1h 30m Hands-on collaborative workshop for teams and stakeholders." [ref=e54] [cursor=pointer]:
+            - generic [ref=e57]:
+              - generic [ref=e58]:
+                - generic [ref=e59]: Workshop
+                - generic [ref=e60]: $350
+              - generic [ref=e62]:
+                - img [ref=e63]
+                - text: 1h 30m
+              - paragraph [ref=e66]: Hands-on collaborative workshop for teams and stakeholders.
+      - generic [ref=e67]:
+        - generic [ref=e68]: 🎁 FREE SERVICES
+        - button "Intro Consultation FREE 30m Free introductory call to understand your needs and how we can help." [ref=e70] [cursor=pointer]:
+          - generic [ref=e73]:
+            - generic [ref=e74]:
+              - generic [ref=e75]: Intro Consultation
+              - generic [ref=e76]: FREE
+            - generic [ref=e78]:
+              - img [ref=e79]
+              - text: 30m
+            - paragraph [ref=e82]: Free introductory call to understand your needs and how we can help.
+    - button "Continue" [disabled] [ref=e84]
+```

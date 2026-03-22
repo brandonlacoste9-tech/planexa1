@@ -31,3 +31,13 @@
 - [x] Show trial countdown in dashboard
 - [x] Create payment reminder before trial expires
 - [ ] Block access after trial expires without payment
+
+## Playwright E2E Tests
+
+- [x] Set up Playwright configuration
+- [x] Create test for free service booking flow
+- [x] Create test for paid service booking with trial
+- [x] Create test for trial badge display
+- [x] Create test for payment button visibility
+- [x] Create test for payment success/canceled pages
+- [ ] Run all E2E tests and verify passing
