@@ -13,6 +13,9 @@ import ClientsPage from "./pages/Clients";
 import AnalyticsPage from "./pages/Analytics";
 import SettingsPage from "./pages/Settings";
 import BookingPage from "./pages/Booking";
+import PaymentsPage from "./pages/Payments";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCanceled from "./pages/PaymentCanceled";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -22,6 +25,9 @@ function Router() {
       <Route path="/clients" component={ClientsPage} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/settings" component={SettingsPage} />
+      <Route path="/payments" component={PaymentsPage} />
+      <Route path="/payment-success" component={PaymentSuccess} />
+      <Route path="/payment-canceled" component={PaymentCanceled} />
       <Route path="/book/:slug" component={BookingPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

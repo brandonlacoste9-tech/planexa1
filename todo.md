@@ -7,7 +7,9 @@
 - [x] Implement checkout session creation endpoint
 - [x] Add webhook handler for payment events
 - [x] Create payment success/cancel pages
-- [ ] Add payment button to booking flow (UI integration)
-- [ ] Create payment history page
+- [x] Add payment button to booking flow (UI integration)
+- [x] Create payment history page
+- [x] Register webhook endpoint in Express server
+- [x] Add payment routes to App.tsx
 - [ ] Test with Stripe test card (4242 4242 4242 4242)
 - [ ] Claim Stripe sandbox and configure live keys

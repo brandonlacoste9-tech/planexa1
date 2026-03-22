@@ -3,8 +3,9 @@
 // Multi-step: Service → Date → Time → Details → Confirmation
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Check, Clock, DollarSign, Calendar, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Clock, DollarSign, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { trpc } from '../lib/trpc';
 import {
   appointmentTypes,
   businessInfo,
@@ -361,13 +362,19 @@ function ConfirmationStep({
   date,
   time,
   clientName,
+  clientEmail,
   onBookAnother,
+  onPaymentClick,
+  isProcessing,
 }: {
   service: AppointmentType;
   date: Date;
   time: string;
   clientName: string;
+  clientEmail: string;
   onBookAnother: () => void;
+  onPaymentClick: () => void;
+  isProcessing: boolean;
 }) {
   return (
     <div className="text-center">
@@ -426,6 +433,34 @@ function ConfirmationStep({
       </div>
 
       <div className="space-y-2">
+        {service.price_cents > 0 && (
+          <button
+            onClick={onPaymentClick}
+            disabled={isProcessing}
+            className="w-full py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            style={{
+              backgroundColor: '#2D6A4F',
+              color: 'white',
+              fontFamily: 'DM Sans, sans-serif',
+              opacity: isProcessing ? 0.7 : 1,
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+            }}
+            onMouseEnter={e => !isProcessing && (e.currentTarget.style.backgroundColor = '#40916C')}
+            onMouseLeave={e => !isProcessing && (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                Processing Payment...
+              </>
+            ) : (
+              <>
+                <DollarSign size={14} />
+                Complete Payment
+              </>
+            )}
+          </button>
+        )}
         <a
           href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(service.name + ' with ' + businessInfo.name)}&dates=${date.toISOString().split('T')[0].replace(/-/g, '')}T${time.replace(':', '')}00/${date.toISOString().split('T')[0].replace(/-/g, '')}T${time.replace(':', '')}00`}
           target="_blank"
@@ -495,6 +530,9 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', email: '', phone: '', notes: '' });
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const checkoutMutation = trpc.stripe.createCheckoutSession.useMutation();
 
   const handleReset = () => {
     setStep('service');
@@ -510,6 +548,32 @@ export default function BookingPage() {
       return;
     }
     setStep('confirmation');
+  };
+
+  const handlePaymentClick = async () => {
+    if (!selectedService) return;
+
+    setIsProcessing(true);
+    try {
+      const result = await checkoutMutation.mutateAsync({
+        appointmentTypeId: selectedService.id,
+        appointmentTypeName: selectedService.name,
+        priceCents: selectedService.price_cents,
+        currency: 'USD',
+        successUrl: `${window.location.origin}/payment-success`,
+        cancelUrl: `${window.location.origin}/payment-canceled`,
+      });
+
+      if (result.checkoutUrl) {
+        toast.success('Redirecting to payment...');
+        window.open(result.checkoutUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error('Failed to process payment. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const canProceedDate = selectedDate !== null;
@@ -672,15 +736,18 @@ export default function BookingPage() {
             </>
           )}
 
-          {step === 'confirmation' && selectedService && selectedDate && selectedTime && (
-            <ConfirmationStep
-              service={selectedService}
-              date={selectedDate}
-              time={selectedTime}
-              clientName={form.name}
-              onBookAnother={handleReset}
-            />
-          )}
+        {step === 'confirmation' && selectedService && selectedDate && selectedTime && (
+          <ConfirmationStep
+            service={selectedService}
+            date={selectedDate}
+            time={selectedTime}
+            clientName={form.name}
+            clientEmail={form.email}
+            onBookAnother={handleReset}
+            onPaymentClick={handlePaymentClick}
+            isProcessing={isProcessing}
+          />
+        )}
         </div>
 
         {/* Footer */}
