@@ -52,3 +52,13 @@
 - [x] Add notification router to backend
 - [x] Add notification settings route to frontend
 - [ ] Test all notification flows
+
+## Real Data Integration (Replace Mock Data)
+
+- [ ] Create appointments and clients database tables
+- [ ] Update booking flow to save appointments to database
+- [ ] Connect Calendar page to real appointment queries
+- [ ] Connect Clients page to real client queries
+- [ ] Connect Analytics to real payment data
+- [ ] Remove all mock data from pages
+- [ ] Test full booking-to-calendar flow

@@ -122,3 +122,50 @@ export const notificationLogs = mysqlTable("notificationLogs", {
 
 export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
+
+/**
+ * Clients table to track booking clients.
+ */
+export const clients = mysqlTable("clients", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phoneNumber: varchar("phoneNumber", { length: 20 }),
+  notes: text("notes"),
+  totalAppointments: int("totalAppointments").default(0).notNull(),
+  totalSpent: decimal("totalSpent", { precision: 10, scale: 2 }).default("0").notNull(),
+  lastAppointmentAt: timestamp("lastAppointmentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Client = typeof clients.$inferSelect;
+export type InsertClient = typeof clients.$inferInsert;
+
+/**
+ * Appointments table to track all bookings.
+ */
+export const appointments = mysqlTable("appointments", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  clientId: int("clientId").notNull(),
+  clientName: varchar("clientName", { length: 255 }).notNull(),
+  clientEmail: varchar("clientEmail", { length: 320 }).notNull(),
+  clientPhone: varchar("clientPhone", { length: 20 }),
+  appointmentType: varchar("appointmentType", { length: 255 }).notNull(),
+  duration: int("duration").notNull(), // in minutes
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  status: mysqlEnum("status", ["scheduled", "completed", "canceled", "no-show"]).default("scheduled").notNull(),
+  startTime: timestamp("startTime").notNull(),
+  endTime: timestamp("endTime").notNull(),
+  notes: text("notes"),
+  paymentId: int("paymentId"),
+  paymentStatus: mysqlEnum("paymentStatus", ["pending", "paid", "failed", "refunded"]).default("pending").notNull(),
+  isTrialBooking: mysqlEnum("isTrialBooking", ["true", "false"]).default("false").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Appointment = typeof appointments.$inferSelect;
+export type InsertAppointment = typeof appointments.$inferInsert;
