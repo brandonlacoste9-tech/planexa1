@@ -3,6 +3,7 @@
 // Fraunces + DM Sans, Forest Green + Cream palette
 
 import { useState, useRef, useCallback } from 'react';
+import { useAuth } from '@/_core/hooks/useAuth';
 import { ChevronLeft, ChevronRight, Plus, ExternalLink, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import DashboardNav from '../components/layout/DashboardNav';
@@ -11,7 +12,6 @@ import NewAppointmentModal from '../components/modals/NewAppointmentModal';
 import AppointmentTypeModal from '../components/modals/AppointmentTypeModal';
 import {
   appointmentTypes,
-  teamMembers,
   businessInfo,
   getAppointmentType,
   getTeamMember,
@@ -191,12 +191,6 @@ function AppointmentTypeItem({
           {formatDuration(type.duration_minutes)}
         </div>
       </div>
-      <span
-        className="text-xs px-1.5 py-0.5 rounded-full shrink-0"
-        style={{ backgroundColor: type.color_hex + '20', color: type.color_hex, fontFamily: 'DM Sans, sans-serif' }}
-      >
-        {type.booking_count}
-      </span>
     </button>
   );
 }
@@ -296,6 +290,7 @@ function UpcomingItem({
 }
 
 export default function CalendarPage() {
+  const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
   const [activeTypeFilter, setActiveTypeFilter] = useState<string | null>(null);
@@ -455,34 +450,23 @@ export default function CalendarPage() {
             <span className="block text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
               Team
             </span>
-            <div className="space-y-2">
-              {teamMembers.map(member => (
-                <div key={member.id} className="flex items-center gap-2">
-                  <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0"
-                    style={{ backgroundColor: member.color_hex + '25', color: member.color_hex, fontFamily: 'DM Sans, sans-serif' }}
-                  >
-                    {member.avatar_initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium truncate" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
-                      {member.name}
-                    </div>
-                    <div className="text-xs capitalize" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                      {member.role}
-                    </div>
-                  </div>
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{
-                      backgroundColor:
-                        member.status === 'available' ? '#52B788' :
-                        member.status === 'booked' ? '#F59E0B' : '#94A3B8',
-                    }}
-                  />
+            {user && (
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0"
+                  style={{ backgroundColor: '#2D6A4F25', color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}
+                >
+                  {(user.name ?? user.email ?? 'U').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                 </div>
-              ))}
-            </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-medium truncate" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
+                    {user.name ?? user.email ?? 'You'}
+                  </div>
+                  <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>owner</div>
+                </div>
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#52B788' }} />
+              </div>
+            )}
           </div>
         </aside>
 
