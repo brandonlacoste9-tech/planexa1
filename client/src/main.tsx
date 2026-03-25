@@ -1,3 +1,4 @@
+import './i18n';
 import { trpc } from "@/lib/trpc";
 import { initSeoWebVitals } from "@/lib/seoWebVitals";
 import { UNAUTHED_ERR_MSG } from '@shared/const';

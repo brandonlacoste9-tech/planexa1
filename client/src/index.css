@@ -63,6 +63,13 @@
 }
 
 :root {
+  /* Planexa Theme Tokens — overridden at runtime by ThemeContext */
+  --plx-primary: #2D6A4F;
+  --plx-hover: #40916C;
+  --plx-pale: #D8F3DC;
+  --plx-bg: #FAF7F2;
+  --plx-border: #E8E0D0;
+
   /* Planexa Brand Colors */
   --green: #2D6A4F;
   --green-mid: #40916C;

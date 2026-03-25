@@ -9,16 +9,18 @@ import { Mail, MessageSquare, Phone, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/_core/hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 export default function NotificationSettings() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { data: prefs, isLoading } = trpc.notifications.getPreferences.useQuery(
     undefined,
     { enabled: isAuthenticated }
   );
   const updateMutation = trpc.notifications.updatePreferences.useMutation({
-    onSuccess: () => toast.success('Notification preferences saved!'),
-    onError: () => toast.error('Failed to save preferences'),
+    onSuccess: () => toast.success(t('notifications.saved')),
+    onError: () => toast.error(t('notifications.saveError')),
   });
 
   const [emailPrefs, setEmailPrefs] = useState({
@@ -80,8 +82,8 @@ export default function NotificationSettings() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FAF7F2' }}>
-        <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#2D6A4F' }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--plx-bg)' }}>
+        <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--plx-primary)' }} />
       </div>
     );
   }
@@ -90,9 +92,9 @@ export default function NotificationSettings() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Notification Settings</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('notifications.title')}</h1>
           <p className="text-muted-foreground">
-            Manage how you receive appointment reminders and booking notifications
+            {t('notifications.subtitle')}
           </p>
         </div>
 
@@ -100,15 +102,15 @@ export default function NotificationSettings() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="email" className="flex items-center gap-2">
               <Mail size={16} />
-              Email
+              {t('notifications.tabs.email')}
             </TabsTrigger>
             <TabsTrigger value="sms" className="flex items-center gap-2">
               <MessageSquare size={16} />
-              SMS
+              {t('notifications.tabs.sms')}
             </TabsTrigger>
             <TabsTrigger value="voice" className="flex items-center gap-2">
               <Phone size={16} />
-              Voice
+              {t('notifications.tabs.voice')}
             </TabsTrigger>
           </TabsList>
 
@@ -118,18 +120,18 @@ export default function NotificationSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="w-5 h-5" />
-                  Email Notifications
+                  {t('notifications.email.title')}
                 </CardTitle>
                 <CardDescription>
-                  Choose which emails you want to receive
+                  {t('notifications.email.subtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {[
-                  { key: 'bookingConfirmation', label: 'Booking Confirmations', desc: 'Get notified when a new booking is confirmed' },
-                  { key: 'paymentReceipt', label: 'Payment Receipts', desc: 'Receive email receipts for payments' },
-                  { key: 'trialReminder', label: 'Trial Reminders', desc: 'Get reminded before your free trial expires' },
-                  { key: 'appointmentReminder', label: 'Appointment Reminders', desc: 'Get reminded about upcoming appointments' },
+                  { key: 'bookingConfirmation', label: t('notifications.email.bookingConfirmation'), desc: t('notifications.email.bookingConfirmationDesc') },
+                  { key: 'paymentReceipt', label: t('notifications.email.paymentReceipt'), desc: t('notifications.email.paymentReceiptDesc') },
+                  { key: 'trialReminder', label: t('notifications.email.trialReminder'), desc: t('notifications.email.trialReminderDesc') },
+                  { key: 'appointmentReminder', label: t('notifications.email.appointmentReminder'), desc: t('notifications.email.appointmentReminderDesc') },
                 ].map(({ key, label, desc }) => (
                   <div key={key} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
@@ -152,17 +154,17 @@ export default function NotificationSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MessageSquare className="w-5 h-5" />
-                  SMS Reminders
+                  {t('notifications.sms.title')}
                 </CardTitle>
                 <CardDescription>
-                  Receive text message reminders for your appointments
+                  {t('notifications.sms.subtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <Label className="text-base font-medium">Enable SMS Reminders</Label>
-                    <p className="text-sm text-muted-foreground">Receive text messages for appointment reminders</p>
+                    <Label className="text-base font-medium">{t('notifications.sms.enable')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('notifications.sms.enableDesc')}</p>
                   </div>
                   <Switch
                     checked={smsPrefs.enabled}
@@ -173,7 +175,7 @@ export default function NotificationSettings() {
                 {smsPrefs.enabled && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
+                      <Label htmlFor="phone">{t('notifications.sms.phone')}</Label>
                       <Input
                         id="phone"
                         type="tel"
@@ -181,12 +183,12 @@ export default function NotificationSettings() {
                         value={smsPrefs.phoneNumber}
                         onChange={e => setSmsPrefs(p => ({ ...p, phoneNumber: e.target.value }))}
                       />
-                      <p className="text-xs text-muted-foreground">Include country code (e.g., +1 for US)</p>
+                      <p className="text-xs text-muted-foreground">{t('notifications.sms.phoneHint')}</p>
                     </div>
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <Label className="text-base font-medium">24-Hour Reminder</Label>
-                        <p className="text-sm text-muted-foreground">Remind me 24 hours before appointment</p>
+                        <Label className="text-base font-medium">{t('notifications.sms.reminder24h')}</Label>
+                        <p className="text-sm text-muted-foreground">{t('notifications.sms.reminder24hDesc')}</p>
                       </div>
                       <Switch
                         checked={smsPrefs.reminder24h}
@@ -195,8 +197,8 @@ export default function NotificationSettings() {
                     </div>
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <Label className="text-base font-medium">1-Hour Reminder</Label>
-                        <p className="text-sm text-muted-foreground">Remind me 1 hour before appointment</p>
+                        <Label className="text-base font-medium">{t('notifications.sms.reminder1h')}</Label>
+                        <p className="text-sm text-muted-foreground">{t('notifications.sms.reminder1hDesc')}</p>
                       </div>
                       <Switch
                         checked={smsPrefs.reminder1h}
@@ -215,17 +217,17 @@ export default function NotificationSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
-                  Voice Calls
+                  {t('notifications.voice.title')}
                 </CardTitle>
                 <CardDescription>
-                  Receive automated voice call reminders for your appointments
+                  {t('notifications.voice.subtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <Label className="text-base font-medium">Enable Voice Calls</Label>
-                    <p className="text-sm text-muted-foreground">Receive phone call reminders for appointments</p>
+                    <Label className="text-base font-medium">{t('notifications.voice.enable')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('notifications.voice.enableDesc')}</p>
                   </div>
                   <Switch
                     checked={voicePrefs.enabled}
@@ -236,7 +238,7 @@ export default function NotificationSettings() {
                 {voicePrefs.enabled && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="voicePhone">Phone Number</Label>
+                      <Label htmlFor="voicePhone">{t('notifications.voice.phone')}</Label>
                       <Input
                         id="voicePhone"
                         type="tel"
@@ -244,12 +246,12 @@ export default function NotificationSettings() {
                         value={voicePrefs.phoneNumber}
                         onChange={e => setVoicePrefs(p => ({ ...p, phoneNumber: e.target.value }))}
                       />
-                      <p className="text-xs text-muted-foreground">Include country code (e.g., +1 for US)</p>
+                      <p className="text-xs text-muted-foreground">{t('notifications.voice.phoneHint')}</p>
                     </div>
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <Label className="text-base font-medium">Appointment Reminders</Label>
-                        <p className="text-sm text-muted-foreground">Receive voice call reminders before appointments</p>
+                        <Label className="text-base font-medium">{t('notifications.voice.reminder')}</Label>
+                        <p className="text-sm text-muted-foreground">{t('notifications.voice.reminderDesc')}</p>
                       </div>
                       <Switch
                         checked={voicePrefs.callReminder}
@@ -258,7 +260,7 @@ export default function NotificationSettings() {
                     </div>
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-sm text-blue-900">
-                        <strong>Note:</strong> Voice calls are automated and may incur additional charges depending on your service provider.
+                        <strong>{t('notifications.voice.note')}</strong> {t('notifications.voice.noteDesc')}
                       </p>
                     </div>
                   </>
@@ -279,9 +281,9 @@ export default function NotificationSettings() {
             ) : (
               <Bell className="w-4 h-4 mr-2" />
             )}
-            Save Preferences
+            {t('notifications.save')}
           </Button>
-          <Button variant="outline" onClick={() => window.history.back()}>Cancel</Button>
+          <Button variant="outline" onClick={() => window.history.back()}>{t('common.cancel')}</Button>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   onClose: () => void;
@@ -14,14 +15,8 @@ const COLOR_SWATCHES = [
   '#D97706', '#F59E0B', '#DC2626', '#0EA5E9', '#475569',
 ];
 
-const BUFFER_OPTIONS = [
-  { value: '0', label: 'None' },
-  { value: '5', label: '5 min' },
-  { value: '10', label: '10 min' },
-  { value: '15', label: '15 min' },
-];
-
 export default function AppointmentTypeModal({ onClose }: Props) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     name: '',
     duration_minutes: 60,
@@ -32,14 +27,21 @@ export default function AppointmentTypeModal({ onClose }: Props) {
     is_active: true,
   });
 
+  const BUFFER_OPTIONS = [
+    { value: '0', label: t('modals.appointmentType.bufferOptions.none') },
+    { value: '5', label: t('modals.appointmentType.bufferOptions.5min') },
+    { value: '10', label: t('modals.appointmentType.bufferOptions.10min') },
+    { value: '15', label: t('modals.appointmentType.bufferOptions.15min') },
+  ];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name) {
-      toast.error('Please enter a name for this appointment type.');
+      toast.error(t('modals.appointmentType.nameError'));
       return;
     }
-    toast.success('Appointment type saved!', {
-      description: `"${form.name}" has been added to your services.`,
+    toast.success(t('modals.appointmentType.saved'), {
+      description: t('modals.appointmentType.savedDesc', { name: form.name }),
     });
     onClose();
   };
@@ -54,7 +56,7 @@ export default function AppointmentTypeModal({ onClose }: Props) {
         className="w-full max-w-md"
         style={{
           background: 'white',
-          border: '1px solid #E8E0D0',
+          border: '1px solid var(--plx-border)',
           borderRadius: 16,
           boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
         }}
@@ -62,19 +64,19 @@ export default function AppointmentTypeModal({ onClose }: Props) {
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: '1px solid #E8E0D0' }}
+          style={{ borderBottom: '1px solid var(--plx-border)' }}
         >
           <h2
             style={{ fontFamily: 'Fraunces, serif', fontWeight: 400, color: '#1E293B' }}
             className="text-xl"
           >
-            New Appointment Type
+            {t('modals.appointmentType.title')}
           </h2>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
             style={{ color: '#64748B' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-pale)')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
           >
             <X size={16} />
@@ -83,26 +85,24 @@ export default function AppointmentTypeModal({ onClose }: Props) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-          {/* Name */}
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-              Name *
+              {t('modals.appointmentType.name')}
             </label>
             <input
               type="text"
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              placeholder="e.g. Strategy Call"
+              placeholder={t('modals.appointmentType.namePlaceholder')}
               className="w-full planexa-input"
               required
             />
           </div>
 
-          {/* Duration + Price Row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-                Duration (minutes) *
+                {t('modals.appointmentType.duration')}
               </label>
               <input
                 type="number"
@@ -116,7 +116,7 @@ export default function AppointmentTypeModal({ onClose }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-                Price (USD) — 0 = Free
+                {t('modals.appointmentType.price')}
               </label>
               <input
                 type="number"
@@ -130,10 +130,9 @@ export default function AppointmentTypeModal({ onClose }: Props) {
             </div>
           </div>
 
-          {/* Color Picker */}
           <div>
             <label className="block text-xs font-medium mb-2" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-              Color
+              {t('modals.appointmentType.color')}
             </label>
             <div className="flex gap-2 flex-wrap">
               {COLOR_SWATCHES.map(color => (
@@ -153,10 +152,9 @@ export default function AppointmentTypeModal({ onClose }: Props) {
             </div>
           </div>
 
-          {/* Buffer Time */}
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-              Buffer Time After
+              {t('modals.appointmentType.buffer')}
             </label>
             <select
               value={String(form.buffer_after_minutes)}
@@ -169,30 +167,28 @@ export default function AppointmentTypeModal({ onClose }: Props) {
             </select>
           </div>
 
-          {/* Description */}
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-              Description
+              {t('modals.appointmentType.description')}
             </label>
             <textarea
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              placeholder="Brief description shown to clients..."
+              placeholder={t('modals.appointmentType.descriptionPlaceholder')}
               rows={2}
               className="w-full planexa-input resize-none"
             />
           </div>
 
-          {/* Active Toggle */}
           <div className="flex items-center justify-between py-1">
             <span className="text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-              Active (visible to clients)
+              {t('modals.appointmentType.active')}
             </span>
             <button
               type="button"
               onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}
               className="relative w-10 h-5 rounded-full transition-colors"
-              style={{ backgroundColor: form.is_active ? '#2D6A4F' : '#CBD5E1' }}
+              style={{ backgroundColor: form.is_active ? 'var(--plx-primary)' : '#CBD5E1' }}
             >
               <span
                 className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
@@ -201,26 +197,25 @@ export default function AppointmentTypeModal({ onClose }: Props) {
             </button>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-2" style={{ borderTop: '1px solid #E8E0D0' }}>
+          <div className="flex gap-3 pt-2" style={{ borderTop: '1px solid var(--plx-border)' }}>
             <button
               type="button"
               onClick={onClose}
               className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
-              style={{ border: '1px solid #E8E0D0', color: '#475569', fontFamily: 'DM Sans, sans-serif', backgroundColor: 'transparent' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
+              style={{ border: '1px solid var(--plx-border)', color: '#475569', fontFamily: 'DM Sans, sans-serif', backgroundColor: 'transparent' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-pale)')}
               onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
-              style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+              style={{ backgroundColor: 'var(--plx-primary)', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--plx-primary)')}
             >
-              Save Type
+              {t('modals.appointmentType.save')}
             </button>
           </div>
         </form>

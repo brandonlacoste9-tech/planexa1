@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Calendar, Clock, User, Mail, FileText, Bell } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { appointmentTypes, formatDuration, formatPrice } from '../../lib/data';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function NewAppointmentModal({ onClose, prefillDate }: Props) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     client_name: '',
     client_email: '',
@@ -23,16 +25,16 @@ export default function NewAppointmentModal({ onClose, prefillDate }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.client_name || !form.client_email || !form.appointment_type_id) {
-      toast.error('Please fill in all required fields.');
+      toast.error(t('modals.newAppointment.requiredError'));
       return;
     }
-    toast.success('Appointment created!', {
-      description: `${form.client_name} — ${new Date(form.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at ${form.start_time}`,
+    toast.success(t('modals.newAppointment.created'), {
+      description: `${form.client_name} — ${new Date(form.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} at ${form.start_time}`,
     });
     onClose();
   };
 
-  const selectedType = appointmentTypes.find(t => t.id === form.appointment_type_id);
+  const selectedType = appointmentTypes.find(tp => tp.id === form.appointment_type_id);
 
   return (
     <div
@@ -40,14 +42,14 @@ export default function NewAppointmentModal({ onClose, prefillDate }: Props) {
       style={{ backgroundColor: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(4px)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-md" style={{ background: 'white', border: '1px solid #E8E0D0', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+      <div className="w-full max-w-md" style={{ background: 'white', border: '1px solid var(--plx-border)', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid #E8E0D0' }}>
+        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid var(--plx-border)' }}>
           <h2 style={{ fontFamily: 'Fraunces, serif', fontWeight: 400, color: '#1E293B' }} className="text-xl">
-            New Appointment
+            {t('modals.newAppointment.title')}
           </h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full transition-colors" style={{ color: '#64748B' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-pale)')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
             <X size={16} />
           </button>
@@ -55,34 +57,31 @@ export default function NewAppointmentModal({ onClose, prefillDate }: Props) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-          {/* Client Name */}
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-              <User size={11} className="inline mr-1" />Client Name *
+              <User size={11} className="inline mr-1" />{t('modals.newAppointment.clientName')}
             </label>
             <input type="text" value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))}
-              placeholder="Full name" className="w-full planexa-input" required />
+              placeholder={t('modals.newAppointment.clientNamePlaceholder')} className="w-full planexa-input" required />
           </div>
 
-          {/* Client Email */}
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-              <Mail size={11} className="inline mr-1" />Client Email *
+              <Mail size={11} className="inline mr-1" />{t('modals.newAppointment.clientEmail')}
             </label>
             <input type="email" value={form.client_email} onChange={e => setForm(f => ({ ...f, client_email: e.target.value }))}
-              placeholder="email@example.com" className="w-full planexa-input" required />
+              placeholder={t('modals.newAppointment.clientEmailPlaceholder')} className="w-full planexa-input" required />
           </div>
 
-          {/* Appointment Type */}
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-              Appointment Type *
+              {t('modals.newAppointment.type')}
             </label>
             <select value={form.appointment_type_id} onChange={e => setForm(f => ({ ...f, appointment_type_id: e.target.value }))}
               className="w-full planexa-input" required>
-              <option value="">Select a type…</option>
-              {appointmentTypes.filter(t => t.is_active).map(t => (
-                <option key={t.id} value={t.id}>{t.name} — {formatDuration(t.duration_minutes)} · {formatPrice(t.price_cents)}</option>
+              <option value="">{t('modals.newAppointment.typePlaceholder')}</option>
+              {appointmentTypes.filter(tp => tp.is_active).map(tp => (
+                <option key={tp.id} value={tp.id}>{tp.name} — {formatDuration(tp.duration_minutes)} · {formatPrice(tp.price_cents)}</option>
               ))}
             </select>
             {selectedType && (
@@ -93,60 +92,56 @@ export default function NewAppointmentModal({ onClose, prefillDate }: Props) {
             )}
           </div>
 
-          {/* Date + Time */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-                <Calendar size={11} className="inline mr-1" />Date *
+                <Calendar size={11} className="inline mr-1" />{t('modals.newAppointment.date')}
               </label>
               <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                 className="w-full planexa-input" required />
             </div>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-                <Clock size={11} className="inline mr-1" />Time *
+                <Clock size={11} className="inline mr-1" />{t('modals.newAppointment.time')}
               </label>
               <input type="time" value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))}
                 className="w-full planexa-input" required />
             </div>
           </div>
 
-          {/* Notes */}
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-              <FileText size={11} className="inline mr-1" />Notes
+              <FileText size={11} className="inline mr-1" />{t('modals.newAppointment.notes')}
             </label>
             <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              placeholder="Optional notes…" rows={2} className="w-full planexa-input resize-none" />
+              placeholder={t('modals.newAppointment.notesPlaceholder')} rows={2} className="w-full planexa-input resize-none" />
           </div>
 
-          {/* Reminder Toggle */}
           <div className="flex items-center justify-between py-1">
             <div className="flex items-center gap-2">
               <Bell size={13} style={{ color: '#64748B' }} />
-              <span className="text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>Send reminder (24h before)</span>
+              <span className="text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>{t('modals.newAppointment.reminder')}</span>
             </div>
             <button type="button" onClick={() => setForm(f => ({ ...f, send_reminder: !f.send_reminder }))}
               className="relative w-10 h-5 rounded-full transition-colors"
-              style={{ backgroundColor: form.send_reminder ? '#2D6A4F' : '#CBD5E1' }}>
+              style={{ backgroundColor: form.send_reminder ? 'var(--plx-primary)' : '#CBD5E1' }}>
               <span className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
                 style={{ transform: form.send_reminder ? 'translateX(22px)' : 'translateX(2px)' }} />
             </button>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-2" style={{ borderTop: '1px solid #E8E0D0' }}>
+          <div className="flex gap-3 pt-2" style={{ borderTop: '1px solid var(--plx-border)' }}>
             <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
-              style={{ border: '1px solid #E8E0D0', color: '#475569', fontFamily: 'DM Sans, sans-serif', backgroundColor: 'transparent' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
+              style={{ border: '1px solid var(--plx-border)', color: '#475569', fontFamily: 'DM Sans, sans-serif', backgroundColor: 'transparent' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-pale)')}
               onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
-              Cancel
+              {t('common.cancel')}
             </button>
             <button type="submit" className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
-              style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}>
-              Create Appointment
+              style={{ backgroundColor: 'var(--plx-primary)', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--plx-primary)')}>
+              {t('modals.newAppointment.create')}
             </button>
           </div>
         </form>

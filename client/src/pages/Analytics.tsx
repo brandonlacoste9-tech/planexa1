@@ -8,19 +8,7 @@ import {
 import DashboardNav from '../components/layout/DashboardNav';
 import DashboardFooter from '../components/layout/DashboardFooter';
 import { TrendingUp, Users, Calendar, DollarSign } from 'lucide-react';
-
-const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const barData = weekDays.map(day => ({ day, appointments: 0 }));
-const lineData = Array.from({ length: 12 }, (_, i) => ({ week: `W${12 - i}`, revenue: 0 })).reverse();
-const donutData: { name: string; value: number; color: string }[] = [];
-const recentActivity: never[] = [];
-
-const metrics = [
-  { label: 'Appointments This Month', value: 0, icon: Calendar, change: '—', positive: true },
-  { label: 'Revenue This Month', value: '$0', icon: DollarSign, change: '—', positive: true },
-  { label: 'Show Rate', value: '—', icon: TrendingUp, change: '—', positive: true },
-  { label: 'New Clients', value: 0, icon: Users, change: '—', positive: true },
-];
+import { useTranslation } from 'react-i18next';
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -47,8 +35,23 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function AnalyticsPage() {
+  const { t } = useTranslation();
+
+  const weekDays = [t('analytics.days.Mon'), t('analytics.days.Tue'), t('analytics.days.Wed'), t('analytics.days.Thu'), t('analytics.days.Fri'), t('analytics.days.Sat'), t('analytics.days.Sun')];
+  const barData = weekDays.map(day => ({ day, appointments: 0 }));
+  const lineData = Array.from({ length: 12 }, (_, i) => ({ week: `W${12 - i}`, revenue: 0 })).reverse();
+  const donutData: { name: string; value: number; color: string }[] = [];
+  const recentActivity: never[] = [];
+
+  const metrics = [
+    { label: t('analytics.metrics.appointments'), value: 0, icon: Calendar, change: '—', positive: true },
+    { label: t('analytics.metrics.revenue'), value: '$0', icon: DollarSign, change: '—', positive: true },
+    { label: t('analytics.metrics.showRate'), value: '—', icon: TrendingUp, change: '—', positive: true },
+    { label: t('analytics.metrics.newClients'), value: 0, icon: Users, change: '—', positive: true },
+  ];
+
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: '#FAF7F2' }}>
+    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: 'var(--plx-bg)' }}>
       <DashboardNav />
 
       <div className="flex-1 overflow-y-auto pt-14 pb-12">
@@ -59,10 +62,10 @@ export default function AnalyticsPage() {
               className="text-2xl"
               style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: '#1E293B', fontStyle: 'italic' }}
             >
-              Analytics
+              {t('analytics.title')}
             </h1>
             <p className="text-sm mt-0.5" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-              Performance overview for {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              {t('analytics.perfOverview')} {new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
             </p>
           </div>
 
@@ -73,15 +76,15 @@ export default function AnalyticsPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: '#D8F3DC' }}
+                    style={{ backgroundColor: 'var(--plx-pale)' }}
                   >
-                    <Icon size={15} style={{ color: '#2D6A4F' }} />
+                    <Icon size={15} style={{ color: 'var(--plx-primary)' }} />
                   </div>
                   <span
                     className="text-xs font-medium px-1.5 py-0.5 rounded-full"
                     style={{
-                      backgroundColor: positive ? '#D8F3DC' : '#FEE2E2',
-                      color: positive ? '#2D6A4F' : '#DC2626',
+                      backgroundColor: positive ? 'var(--plx-pale)' : '#FEE2E2',
+                      color: positive ? 'var(--plx-primary)' : '#DC2626',
                       fontFamily: 'DM Sans, sans-serif',
                     }}
                   >
@@ -104,15 +107,15 @@ export default function AnalyticsPage() {
           {/* Empty state notice */}
           <div
             className="rounded-xl p-5 mb-5 flex items-start gap-3"
-            style={{ backgroundColor: '#F0EBE0', border: '1px solid #E8E0D0' }}
+            style={{ backgroundColor: 'var(--plx-pale)', border: '1px solid var(--plx-border)' }}
           >
-            <span style={{ fontSize: 20 }}>📊</span>
+            <span style={{ fontSize: 20 }}>{t('analytics.empty.banner')}</span>
             <div>
               <div className="text-sm font-medium mb-1" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
-                Your analytics will appear here once bookings come in.
+                {t('analytics.empty.title')}
               </div>
               <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                Share your booking link with clients to start seeing real appointment and revenue data.
+                {t('analytics.empty.desc')}
               </div>
             </div>
           </div>
@@ -125,11 +128,11 @@ export default function AnalyticsPage() {
                 className="text-base mb-4"
                 style={{ fontFamily: 'Fraunces, serif', fontWeight: 400, color: '#1E293B' }}
               >
-                Appointments This Week
+                {t('analytics.charts.weekly')}
               </h3>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E8E0D0" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--plx-border)" vertical={false} />
                   <XAxis
                     dataKey="day"
                     tick={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, fill: '#94A3B8' }}
@@ -143,7 +146,7 @@ export default function AnalyticsPage() {
                     allowDecimals={false}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="appointments" fill="#2D6A4F" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="appointments" fill="var(--plx-primary)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -154,11 +157,11 @@ export default function AnalyticsPage() {
                 className="text-base mb-4"
                 style={{ fontFamily: 'Fraunces, serif', fontWeight: 400, color: '#1E293B' }}
               >
-                Revenue (Last 12 Weeks)
+                {t('analytics.charts.revenue')}
               </h3>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={lineData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E8E0D0" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--plx-border)" vertical={false} />
                   <XAxis
                     dataKey="week"
                     tick={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, fill: '#94A3B8' }}
@@ -175,9 +178,9 @@ export default function AnalyticsPage() {
                   <Line
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#2D6A4F"
+                    stroke="var(--plx-primary)"
                     strokeWidth={2}
-                    dot={{ fill: '#2D6A4F', r: 3 }}
+                    dot={{ fill: 'var(--plx-primary)' as any, r: 3 }}
                     activeDot={{ r: 5 }}
                   />
                 </LineChart>
@@ -193,23 +196,23 @@ export default function AnalyticsPage() {
                 className="text-base mb-4"
                 style={{ fontFamily: 'Fraunces, serif', fontWeight: 400, color: '#1E293B' }}
               >
-                Service Breakdown
+                {t('analytics.charts.breakdown')}
               </h3>
               <div className="text-center py-10" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                <div className="text-2xl mb-2">🥧</div>
-                <div className="text-xs" style={{ color: '#94A3B8' }}>Service breakdown will appear once bookings come in.</div>
+                <div className="text-2xl mb-2">{t('analytics.breakdownEmpty.icon')}</div>
+                <div className="text-xs" style={{ color: '#94A3B8' }}>{t('analytics.breakdownEmpty.desc')}</div>
               </div>
             </div>
 
             {/* Recent Activity */}
             <div className="planexa-card p-5 lg:col-span-2">
               <h3 className="text-base mb-4" style={{ fontFamily: 'Fraunces, serif', fontWeight: 400, color: '#1E293B' }}>
-                Recent Activity
+                {t('analytics.charts.activity')}
               </h3>
               <div className="text-center py-10" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                <div className="text-2xl mb-2">🗒️</div>
-                <div className="text-sm font-medium mb-1" style={{ color: '#1E293B' }}>No activity yet</div>
-                <div className="text-xs" style={{ color: '#94A3B8' }}>Completed appointments will show up here.</div>
+                <div className="text-2xl mb-2">{t('analytics.activityEmpty.icon')}</div>
+                <div className="text-sm font-medium mb-1" style={{ color: '#1E293B' }}>{t('analytics.activityEmpty.title')}</div>
+                <div className="text-xs" style={{ color: '#94A3B8' }}>{t('analytics.activityEmpty.desc')}</div>
               </div>
             </div>
           </div>

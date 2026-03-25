@@ -3,6 +3,7 @@
 // Fraunces + DM Sans, Forest Green + Cream palette
 
 import { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/_core/hooks/useAuth';
 import { trpc } from '../lib/trpc';
 import { ChevronLeft, ChevronRight, Plus, ExternalLink, Copy, Check } from 'lucide-react';
@@ -126,7 +127,7 @@ function MiniCalendar({
               onClick={() => onDateSelect(date)}
               className="relative flex flex-col items-center py-0.5 rounded transition-colors"
               style={{
-                backgroundColor: isToday ? '#2D6A4F' : isSelected ? '#D8F3DC' : 'transparent',
+                backgroundColor: isToday ? 'var(--plx-primary)' : isSelected ? 'var(--plx-pale)' : 'transparent',
               }}
               onMouseEnter={e => {
                 if (!isToday && !isSelected) e.currentTarget.style.backgroundColor = '#F0EBE0';
@@ -138,7 +139,7 @@ function MiniCalendar({
               <span
                 className="text-xs leading-5"
                 style={{
-                  color: isToday ? 'white' : isSelected ? '#2D6A4F' : '#1E293B',
+                  color: isToday ? 'white' : isSelected ? 'var(--plx-primary)' : '#1E293B',
                   fontFamily: 'DM Sans, sans-serif',
                   fontWeight: isToday ? 600 : 400,
                 }}
@@ -174,7 +175,7 @@ function AppointmentTypeItem({
       onClick={onClick}
       className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors text-left"
       style={{
-        backgroundColor: isActive ? '#D8F3DC' : 'transparent',
+        backgroundColor: isActive ? 'var(--plx-pale)' : 'transparent',
       }}
       onMouseEnter={e => {
         if (!isActive) e.currentTarget.style.backgroundColor = '#F0EBE0';
@@ -260,7 +261,7 @@ function UpcomingItem({
     <button
       onClick={onClick}
       className="w-full text-left flex gap-0 rounded-lg overflow-hidden transition-all"
-      style={{ border: '1px solid #E8E0D0' }}
+      style={{ border: '1px solid var(--plx-border)' }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)')}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
     >
@@ -292,6 +293,7 @@ function UpcomingItem({
 
 export default function CalendarPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
   const [activeTypeFilter, setActiveTypeFilter] = useState<string | null>(null);
@@ -370,9 +372,9 @@ export default function CalendarPage() {
       return { ...a, date: dayDate, start_time: newStart, end_time: newEnd };
     }));
 
-    toast.success('Appointment moved!');
+    toast.success(t('calendar.appointmentMoved'));
     dragApptId.current = null;
-  }, []);
+  }, [t]);
 
   const profileQuery = trpc.settings.getBusinessProfile.useQuery(undefined, {
     enabled: !!user,
@@ -387,21 +389,21 @@ export default function CalendarPage() {
     navigator.clipboard.writeText(`${window.location.origin}/book/${bookingSlug}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success('Booking link copied!');
+    toast.success(t('calendar.linkCopied'));
   };
 
   const timeNowPos = getCurrentTimePosition();
   const isCurrentWeek = formatDateKey(weekStart) === formatDateKey(getWeekStart(new Date()));
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: '#FAF7F2' }}>
+    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: 'var(--plx-bg)' }}>
       <DashboardNav />
 
       <div className="flex flex-1 overflow-hidden pt-14">
         {/* Left Sidebar */}
         <aside
           className="hidden lg:flex flex-col gap-3 p-3 overflow-y-auto shrink-0"
-          style={{ width: 268, borderRight: '1px solid #E8E0D0', backgroundColor: '#FAF7F2' }}
+          style={{ width: 268, borderRight: '1px solid var(--plx-border)', backgroundColor: 'var(--plx-bg)' }}
         >
           {/* Mini Calendar */}
           <MiniCalendar
@@ -414,15 +416,15 @@ export default function CalendarPage() {
           <div className="planexa-card p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                Services
+                {t('calendar.services')}
               </span>
               {activeTypeFilter && (
                 <button
                   onClick={() => setActiveTypeFilter(null)}
                   className="text-xs"
-                  style={{ color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}
+                  style={{ color: 'var(--plx-primary)', fontFamily: 'DM Sans, sans-serif' }}
                 >
-                  Clear
+                  {t('calendar.clearFilter')}
                 </button>
               )}
             </div>
@@ -449,28 +451,28 @@ export default function CalendarPage() {
               onMouseLeave={e => (e.currentTarget.style.borderColor = '#CBD5E1')}
             >
               <Plus size={11} />
-              Add appointment type
+              {t('calendar.addType')}
             </button>
           </div>
 
           {/* Team Members */}
           <div className="planexa-card p-3">
             <span className="block text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-              Team
+              {t('calendar.team')}
             </span>
             {user && (
               <div className="flex items-center gap-2">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0"
-                  style={{ backgroundColor: '#2D6A4F25', color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--plx-primary) 15%, transparent)', color: 'var(--plx-primary)', fontFamily: 'DM Sans, sans-serif' }}
                 >
                   {(user.name ?? user.email ?? 'U').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-medium truncate" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
-                    {user.name ?? user.email ?? 'You'}
+                    {user.name ?? user.email ?? t('calendar.you')}
                   </div>
-                  <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>owner</div>
+                  <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>{t('calendar.owner')}</div>
                 </div>
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#52B788' }} />
               </div>
@@ -483,7 +485,7 @@ export default function CalendarPage() {
           {/* Week Navigation Header */}
           <div
             className="flex items-center gap-3 px-4 py-2 shrink-0"
-            style={{ borderBottom: '1px solid #E8E0D0', backgroundColor: 'white' }}
+            style={{ borderBottom: '1px solid var(--plx-border)', backgroundColor: 'white' }}
           >
             <div className="flex items-center gap-1">
               <button
@@ -501,13 +503,13 @@ export default function CalendarPage() {
                 style={{
                   fontFamily: 'DM Sans, sans-serif',
                   color: '#475569',
-                  border: '1px solid #E8E0D0',
+                  border: '1px solid var(--plx-border)',
                   backgroundColor: 'white',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-pale)')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'white')}
               >
-                Today
+                {t('calendar.today')}
               </button>
               <button
                 onClick={() => navigateWeek(1)}
@@ -534,7 +536,7 @@ export default function CalendarPage() {
           {/* Day Headers */}
           <div
             className="flex shrink-0"
-            style={{ borderBottom: '1px solid #E8E0D0', backgroundColor: 'white' }}
+            style={{ borderBottom: '1px solid var(--plx-border)', backgroundColor: 'white' }}
           >
             <div className="shrink-0" style={{ width: 52 }} />
             {weekDays.map((day, i) => {
@@ -544,13 +546,13 @@ export default function CalendarPage() {
                   key={i}
                   className="flex-1 text-center py-2"
                   style={{
-                    borderLeft: '1px solid #E8E0D0',
+                    borderLeft: '1px solid var(--plx-border)',
                     backgroundColor: isToday ? 'rgba(45, 106, 79, 0.04)' : 'transparent',
                   }}
                 >
                   <div
                     className="text-xs uppercase tracking-wide"
-                    style={{ color: isToday ? '#2D6A4F' : '#64748B', fontFamily: 'DM Sans, sans-serif' }}
+                    style={{ color: isToday ? 'var(--plx-primary)' : '#64748B', fontFamily: 'DM Sans, sans-serif' }}
                   >
                     {day.toLocaleDateString('en-US', { weekday: 'short' })}
                   </div>
@@ -559,7 +561,7 @@ export default function CalendarPage() {
                     style={{
                       fontFamily: 'Fraunces, serif',
                       color: isToday ? 'white' : '#1E293B',
-                      backgroundColor: isToday ? '#2D6A4F' : 'transparent',
+                      backgroundColor: isToday ? 'var(--plx-primary)' : 'transparent',
                       fontWeight: isToday ? 400 : 300,
                     }}
                   >
@@ -606,7 +608,7 @@ export default function CalendarPage() {
                     key={dayIdx}
                     className="flex-1 relative"
                     style={{
-                      borderLeft: '1px solid #E8E0D0',
+                      borderLeft: '1px solid var(--plx-border)',
                       backgroundColor: isToday ? 'rgba(45, 106, 79, 0.02)' : 'transparent',
                     }}
                   >
@@ -617,7 +619,7 @@ export default function CalendarPage() {
                           className="absolute left-0 right-0"
                           style={{
                             top: i * HOUR_HEIGHT,
-                            borderTop: '1px solid #E8E0D0',
+                            borderTop: '1px solid var(--plx-border)',
                           }}
                         />
                         <div
@@ -665,11 +667,11 @@ export default function CalendarPage() {
                       >
                         <div
                           className="w-2.5 h-2.5 rounded-full shrink-0 -ml-1.5"
-                          style={{ backgroundColor: '#2D6A4F' }}
+                          style={{ backgroundColor: 'var(--plx-primary)' }}
                         />
                         <div
                           className="flex-1 h-px"
-                          style={{ backgroundColor: '#2D6A4F' }}
+                          style={{ backgroundColor: 'var(--plx-primary)' }}
                         />
                       </div>
                     )}
@@ -683,12 +685,12 @@ export default function CalendarPage() {
         {/* Right Panel */}
         <aside
           className="hidden xl:flex flex-col shrink-0 overflow-hidden"
-          style={{ width: 300, borderLeft: '1px solid #E8E0D0', backgroundColor: '#FAF7F2' }}
+          style={{ width: 300, borderLeft: '1px solid var(--plx-border)', backgroundColor: 'var(--plx-bg)' }}
         >
           {/* Tabs */}
           <div
             className="flex shrink-0"
-            style={{ borderBottom: '1px solid #E8E0D0', backgroundColor: 'white' }}
+            style={{ borderBottom: '1px solid var(--plx-border)', backgroundColor: 'white' }}
           >
             {(['upcoming', 'booking'] as const).map(tab => (
               <button
@@ -697,12 +699,12 @@ export default function CalendarPage() {
                 className="flex-1 py-3 text-xs font-medium capitalize transition-colors"
                 style={{
                   fontFamily: 'DM Sans, sans-serif',
-                  color: rightTab === tab ? '#2D6A4F' : '#64748B',
-                  borderBottom: rightTab === tab ? '2px solid #2D6A4F' : '2px solid transparent',
+                  color: rightTab === tab ? 'var(--plx-primary)' : '#64748B',
+                  borderBottom: rightTab === tab ? '2px solid var(--plx-primary)' : '2px solid transparent',
                   backgroundColor: 'transparent',
                 }}
               >
-                {tab === 'upcoming' ? 'Upcoming' : 'Booking Page'}
+                {tab === 'upcoming' ? t('calendar.tabs.upcoming') : t('calendar.tabs.bookingPage')}
               </button>
             ))}
           </div>
@@ -714,8 +716,8 @@ export default function CalendarPage() {
                 {upcomingAppts.length === 0 ? (
                   <div className="text-center py-8" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                     <div className="text-2xl mb-2">📅</div>
-                    <div className="text-sm font-medium mb-1" style={{ color: '#1E293B' }}>No upcoming appointments</div>
-                    <div className="text-xs" style={{ color: '#94A3B8' }}>Share your booking link so clients can schedule time with you.</div>
+                    <div className="text-sm font-medium mb-1" style={{ color: '#1E293B' }}>{t('calendar.empty.title')}</div>
+                    <div className="text-xs" style={{ color: '#94A3B8' }}>{t('calendar.empty.desc')}</div>
                   </div>
                 ) : (
                   upcomingAppts.map(appt => (
@@ -744,7 +746,7 @@ export default function CalendarPage() {
                     {businessDescription}
                   </div>
                   <div className="space-y-2">
-                    {appointmentTypes.filter(t => t.is_active).map(type => (
+                    {appointmentTypes.filter(at => at.is_active).map(type => (
                       <div
                         key={type.id}
                         className="flex items-center gap-2 rounded-lg p-2"
@@ -764,18 +766,18 @@ export default function CalendarPage() {
                   </div>
                   <button
                     className="w-full mt-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
-                    style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+                    style={{ backgroundColor: 'var(--plx-primary)', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
                     onClick={() => window.open(`/book/${bookingSlug}`, '_blank')}
                   >
                     <ExternalLink size={11} />
-                    View Live Booking Page →
+                    {t('calendar.viewLive')}
                   </button>
                 </div>
 
                 {/* Copy Link */}
                 <div
                   className="flex items-center gap-2 rounded-lg px-3 py-2"
-                  style={{ border: '1px solid #E8E0D0', backgroundColor: 'white' }}
+                  style={{ border: '1px solid var(--plx-border)', backgroundColor: 'white' }}
                 >
                   <span
                     className="flex-1 text-xs truncate"
@@ -786,7 +788,7 @@ export default function CalendarPage() {
                   <button
                     onClick={handleCopyLink}
                     className="shrink-0 p-1 rounded transition-colors"
-                    style={{ color: copied ? '#2D6A4F' : '#64748B' }}
+                    style={{ color: copied ? 'var(--plx-primary)' : '#64748B' }}
                     onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
                     onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
@@ -816,8 +818,8 @@ export default function CalendarPage() {
             className="w-full sm:w-80 h-auto sm:h-full overflow-y-auto"
             style={{
               backgroundColor: 'white',
-              borderLeft: '1px solid #E8E0D0',
-              borderTop: '1px solid #E8E0D0',
+              borderLeft: '1px solid var(--plx-border)',
+              borderTop: '1px solid var(--plx-border)',
               borderRadius: '16px 16px 0 0',
             }}
           >
@@ -831,8 +833,8 @@ export default function CalendarPage() {
                       <div
                         className="text-xs font-medium px-2 py-0.5 rounded-full inline-block mb-2"
                         style={{
-                          backgroundColor: (type?.color_hex || '#2D6A4F') + '20',
-                          color: type?.color_hex || '#2D6A4F',
+                          backgroundColor: (type?.color_hex || 'var(--plx-primary)') + '20',
+                          color: type?.color_hex || 'var(--plx-primary)',
                           fontFamily: 'DM Sans, sans-serif',
                         }}
                       >
@@ -860,29 +862,29 @@ export default function CalendarPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid #E8E0D0' }}>
-                      <span className="text-xs font-medium w-20" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>Date</span>
+                    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid var(--plx-border)' }}>
+                      <span className="text-xs font-medium w-20" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>{t('calendar.details.date')}</span>
                       <span className="text-sm" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
-                        {new Date(selectedAppt.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                        {new Date(selectedAppt.date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid #E8E0D0' }}>
-                      <span className="text-xs font-medium w-20" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>Time</span>
+                    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid var(--plx-border)' }}>
+                      <span className="text-xs font-medium w-20" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>{t('calendar.details.time')}</span>
                       <span className="text-sm" style={{ color: '#1E293B', fontFamily: 'JetBrains Mono, monospace' }}>
                         {formatTime12h(selectedAppt.start_time)} – {formatTime12h(selectedAppt.end_time)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid #E8E0D0' }}>
-                      <span className="text-xs font-medium w-20" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>With</span>
+                    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid var(--plx-border)' }}>
+                      <span className="text-xs font-medium w-20" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>{t('calendar.details.with')}</span>
                       <span className="text-sm" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>{member?.name}</span>
                     </div>
-                    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid #E8E0D0' }}>
-                      <span className="text-xs font-medium w-20" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>Status</span>
+                    <div className="flex items-center gap-3 py-2" style={{ borderTop: '1px solid var(--plx-border)' }}>
+                      <span className="text-xs font-medium w-20" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>{t('calendar.details.status')}</span>
                       <span
                         className="text-xs px-2 py-0.5 rounded-full capitalize"
                         style={{
-                          backgroundColor: selectedAppt.status === 'confirmed' ? '#D8F3DC' : '#F1F5F9',
-                          color: selectedAppt.status === 'confirmed' ? '#2D6A4F' : '#475569',
+                          backgroundColor: selectedAppt.status === 'confirmed' ? 'var(--plx-pale)' : '#F1F5F9',
+                          color: selectedAppt.status === 'confirmed' ? 'var(--plx-primary)' : '#475569',
                           fontFamily: 'DM Sans, sans-serif',
                         }}
                       >
@@ -890,8 +892,8 @@ export default function CalendarPage() {
                       </span>
                     </div>
                     {selectedAppt.notes && (
-                      <div className="py-2" style={{ borderTop: '1px solid #E8E0D0' }}>
-                        <span className="text-xs font-medium block mb-1" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>Notes</span>
+                      <div className="py-2" style={{ borderTop: '1px solid var(--plx-border)' }}>
+                        <span className="text-xs font-medium block mb-1" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>{t('calendar.details.notes')}</span>
                         <p className="text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>{selectedAppt.notes}</p>
                       </div>
                     )}
@@ -900,17 +902,17 @@ export default function CalendarPage() {
                   <div className="mt-4 flex gap-2">
                     <button
                       className="flex-1 py-2 rounded-lg text-xs font-medium"
-                      style={{ border: '1px solid #E8E0D0', color: '#475569', fontFamily: 'DM Sans, sans-serif', backgroundColor: 'transparent' }}
-                      onClick={() => { toast.info('Feature coming soon'); setSelectedAppt(null); }}
+                      style={{ border: '1px solid var(--plx-border)', color: '#475569', fontFamily: 'DM Sans, sans-serif', backgroundColor: 'transparent' }}
+                      onClick={() => { toast.info(t('common.comingSoon')); setSelectedAppt(null); }}
                     >
-                      Cancel Appt
+                      {t('calendar.cancelAppt')}
                     </button>
                     <button
                       className="flex-1 py-2 rounded-lg text-xs font-medium"
-                      style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-                      onClick={() => { toast.success('Marked as complete'); setSelectedAppt(null); }}
+                      style={{ backgroundColor: 'var(--plx-primary)', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+                      onClick={() => { toast.success(t('calendar.markedComplete')); setSelectedAppt(null); }}
                     >
-                      Mark Complete
+                      {t('calendar.markComplete')}
                     </button>
                   </div>
                 </div>

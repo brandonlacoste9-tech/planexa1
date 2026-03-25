@@ -3,48 +3,48 @@
  * Displays confirmation after successful payment
  */
 
-import { useLocation } from 'wouter';
 import { CheckCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'wouter';
+import { useTranslation } from 'react-i18next';
 
 export default function PaymentSuccess() {
-  const [location] = useLocation();
+  const { t } = useTranslation();
   const sessionId = new URLSearchParams(window.location.search).get('session_id');
 
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: '#FAF7F2' }}
+      style={{ backgroundColor: 'var(--plx-bg)' }}
     >
       <div className="max-w-md w-full text-center">
         <div className="mb-6 flex justify-center">
-          <CheckCircle size={64} style={{ color: '#2D6A4F' }} />
+          <CheckCircle size={64} style={{ color: 'var(--plx-primary)' }} />
         </div>
 
         <h1
           className="text-3xl mb-2"
           style={{ fontFamily: 'Fraunces, serif', color: '#1E293B', fontStyle: 'italic' }}
         >
-          Payment Confirmed
+          {t('paymentSuccess.title')}
         </h1>
 
         <p
           className="text-base mb-6"
           style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}
         >
-          Your appointment has been successfully booked. A confirmation email has been sent to you.
+          {t('paymentSuccess.desc')}
         </p>
 
         {sessionId && (
           <div
             className="p-4 rounded-lg mb-6"
-            style={{ backgroundColor: 'white', border: '1px solid #E8E0D0' }}
+            style={{ backgroundColor: 'white', border: '1px solid var(--plx-border)' }}
           >
             <p
               className="text-xs"
               style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}
             >
-              Session ID: {sessionId}
+              {t('paymentSuccess.sessionId')}{sessionId}
             </p>
           </div>
         )}
@@ -53,11 +53,11 @@ export default function PaymentSuccess() {
           <Link
             href="/"
             className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors"
-            style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+            style={{ backgroundColor: 'var(--plx-primary)', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--plx-primary)')}
           >
-            Back to Home
+            {t('paymentSuccess.backHome')}
             <ArrowRight size={14} />
           </Link>
 
@@ -66,14 +66,14 @@ export default function PaymentSuccess() {
             className="block w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors"
             style={{
               backgroundColor: 'white',
-              color: '#2D6A4F',
-              border: '1px solid #E8E0D0',
+              color: 'var(--plx-primary)',
+              border: '1px solid var(--plx-border)',
               fontFamily: 'DM Sans, sans-serif',
             }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-pale)')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'white')}
           >
-            View Booking Details
+            {t('paymentSuccess.viewDetails')}
           </a>
         </div>
       </div>

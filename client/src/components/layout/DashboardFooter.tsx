@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import { Check } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const integrations = [
   { id: 'google', label: 'Google Cal' },
@@ -10,6 +11,7 @@ const integrations = [
 ];
 
 export default function DashboardFooter() {
+  const { t } = useTranslation();
   const [connected] = useState<Record<string, boolean>>(
     Object.fromEntries(integrations.map(i => [i.id, false]))
   );
@@ -19,10 +21,9 @@ export default function DashboardFooter() {
       style={{ backgroundColor: '#1E293B', borderTop: '1px solid rgba(255,255,255,0.06)' }}
       className="h-12 flex items-center px-4 gap-6 shrink-0"
     >
-      {/* Integrations */}
       <div className="flex items-center gap-2 flex-1 overflow-x-auto">
         <span className="text-xs font-medium shrink-0" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-          Integrations
+          {t('footer.integrations')}
         </span>
         <div className="flex items-center gap-1.5">
           {integrations.map(({ id, label }) => {
@@ -30,7 +31,7 @@ export default function DashboardFooter() {
             return (
               <button
                 key={id}
-                onClick={() => toast.info(`${label} integration coming soon`)}
+                onClick={() => toast.info(t('footer.comingSoon', { label }))}
                 className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all"
                 style={{
                   fontFamily: 'DM Sans, sans-serif',

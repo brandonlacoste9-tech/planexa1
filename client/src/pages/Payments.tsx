@@ -7,8 +7,10 @@ import { useAuth } from '@/_core/hooks/useAuth';
 import { trpc } from '@/lib/trpc';
 import { DollarSign, Calendar, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Link } from 'wouter';
+import { useTranslation } from 'react-i18next';
 
 export default function Payments() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const { data: payments = [], isLoading } = trpc.stripe.getPaymentHistory.useQuery(
     undefined,
@@ -17,23 +19,23 @@ export default function Payments() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: '#FAF7F2' }}>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--plx-bg)' }}>
         <div className="max-w-md w-full text-center">
           <h1
             className="text-3xl mb-4"
             style={{ fontFamily: 'Fraunces, serif', color: '#1E293B', fontStyle: 'italic' }}
           >
-            Sign in to view payments
+            {t('payments.signInTitle')}
           </h1>
           <p style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif', marginBottom: '2rem' }}>
-            You need to be logged in to view your payment history.
+            {t('payments.signInDesc')}
           </p>
           <Link
             href="/calendar"
             className="inline-block px-6 py-3 rounded-lg text-sm font-medium transition-colors"
-            style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+            style={{ backgroundColor: 'var(--plx-primary)', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
           >
-            Sign In
+            {t('payments.signIn')}
           </Link>
         </div>
       </div>
@@ -73,28 +75,28 @@ export default function Payments() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FAF7F2' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--plx-bg)' }}>
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/calendar"
             className="text-sm font-medium mb-4 inline-block transition-colors"
-            style={{ color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}
+            style={{ color: 'var(--plx-primary)', fontFamily: 'DM Sans, sans-serif' }}
             onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
             onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
           >
-            ← Back to Dashboard
+            {t('payments.backToDashboard')}
           </Link>
 
           <h1
             className="text-4xl mb-2"
             style={{ fontFamily: 'Fraunces, serif', color: '#1E293B', fontStyle: 'italic' }}
           >
-            Payment History
+            {t('payments.title')}
           </h1>
           <p style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-            View all your transactions and payment details
+            {t('payments.subtitle')}
           </p>
         </div>
 
@@ -103,28 +105,28 @@ export default function Payments() {
           <div className="text-center py-12">
             <div
               className="inline-block animate-spin"
-              style={{ color: '#2D6A4F' }}
+              style={{ color: 'var(--plx-primary)' }}
             >
               ⏳
             </div>
             <p style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif', marginTop: '1rem' }}>
-              Loading payments...
+              {t('payments.loading')}
             </p>
           </div>
         ) : payments.length === 0 ? (
           <div
             className="rounded-xl p-8 text-center"
-            style={{ backgroundColor: 'white', border: '1px solid #E8E0D0' }}
+            style={{ backgroundColor: 'white', border: '1px solid var(--plx-border)' }}
           >
             <DollarSign size={32} style={{ color: '#CBD5E1', margin: '0 auto 1rem' }} />
             <h3
               className="text-lg font-semibold mb-2"
               style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}
             >
-              No payments yet
+              {t('payments.empty.title')}
             </h3>
             <p style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-              You haven't made any payments yet. Book an appointment to get started.
+              {t('payments.empty.desc')}
             </p>
           </div>
         ) : (
@@ -135,7 +137,7 @@ export default function Payments() {
                 className="rounded-xl p-4 transition-all"
                 style={{
                   backgroundColor: 'white',
-                  border: '1px solid #E8E0D0',
+                  border: '1px solid var(--plx-border)',
                 }}
                 onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)')}
                 onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
@@ -148,7 +150,7 @@ export default function Payments() {
                         className="font-semibold text-sm"
                         style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}
                       >
-                        {payment.appointmentTypeId || 'Appointment'}
+                        {payment.appointmentTypeId || t('payments.appointment')}
                       </span>
                       <div
                         className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1"
@@ -183,7 +185,7 @@ export default function Payments() {
                   <div className="text-right">
                     <div
                       className="text-lg font-semibold"
-                      style={{ color: '#2D6A4F', fontFamily: 'Fraunces, serif' }}
+                      style={{ color: 'var(--plx-primary)', fontFamily: 'Fraunces, serif' }}
                     >
                       ${(parseFloat(payment.amount) || 0).toFixed(2)}
                     </div>

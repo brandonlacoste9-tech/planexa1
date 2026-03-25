@@ -2,6 +2,7 @@
 // Design: Table view with search/filter, client detail slide-over
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, ChevronRight, Phone, Mail, Calendar, X, Plus } from 'lucide-react';
 import DashboardNav from '../components/layout/DashboardNav';
 import DashboardFooter from '../components/layout/DashboardFooter';
@@ -23,7 +24,7 @@ type ApiClient = {
 };
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -41,7 +42,7 @@ function ClientRow({
     <tr
       onClick={onClick}
       className="transition-colors cursor-pointer"
-      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FAF7F2')}
+      onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-bg)')}
       onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
     >
       <td className="px-4 py-3">
@@ -49,8 +50,8 @@ function ClientRow({
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0"
             style={{
-              backgroundColor: '#D8F3DC',
-              color: '#2D6A4F',
+              backgroundColor: 'var(--plx-pale)',
+              color: 'var(--plx-primary)',
               fontFamily: 'DM Sans, sans-serif',
             }}
           >
@@ -86,6 +87,7 @@ function ClientRow({
 }
 
 export default function ClientsPage() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [search, setSearch] = useState('');
   const [selectedClient, setSelectedClient] = useState<ApiClient | null>(null);
@@ -104,7 +106,7 @@ export default function ClientsPage() {
   const clientAppointments = selectedClient?.appointments ?? [];
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: '#FAF7F2' }}>
+    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: 'var(--plx-bg)' }}>
       <DashboardNav />
 
       <div className="flex-1 overflow-y-auto pt-14 pb-12">
@@ -116,21 +118,21 @@ export default function ClientsPage() {
                 className="text-2xl"
                 style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: '#1E293B', fontStyle: 'italic' }}
               >
-                Clients
+                {t('clients.title')}
               </h1>
               <p className="text-sm mt-0.5" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                {isLoading ? 'Loading…' : `${clients.length} total client${clients.length !== 1 ? 's' : ''}`}
+                {isLoading ? t('clients.loading') : t('clients.totalClients', { count: clients.length })}
               </p>
             </div>
             <button
               onClick={() => setShowBookModal(true)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-              style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+              style={{ backgroundColor: 'var(--plx-primary)', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--plx-primary)')}
             >
               <Plus size={14} />
-              New Appointment
+              {t('clients.newAppointment')}
             </button>
           </div>
 
@@ -145,7 +147,7 @@ export default function ClientsPage() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search clients by name or email..."
+              placeholder={t('clients.searchPlaceholder')}
               className="w-full pl-9 planexa-input"
               style={{ maxWidth: 400 }}
             />
@@ -156,8 +158,8 @@ export default function ClientsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid #E8E0D0', backgroundColor: '#FAF7F2' }}>
-                    {['Name', 'Email', 'Phone', 'Last Appointment', 'Bookings', 'Total Spent', ''].map(h => (
+                  <tr style={{ borderBottom: '1px solid var(--plx-border)', backgroundColor: 'var(--plx-bg)' }}>
+                    {[t('clients.table.name'), t('clients.table.email'), t('clients.table.phone'), t('clients.table.lastAppointment'), t('clients.table.bookings'), t('clients.table.totalSpent'), ''].map(h => (
                       <th
                         key={h}
                         className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide"
@@ -174,10 +176,10 @@ export default function ClientsPage() {
                       <td colSpan={7} className="px-4 py-16 text-center" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                         <div className="text-2xl mb-2">👥</div>
                         <div className="text-sm font-medium mb-1" style={{ color: '#1E293B' }}>
-                          {search ? 'No clients match your search' : 'No clients yet'}
+                          {search ? t('clients.empty.noMatch') : t('clients.empty.noClients')}
                         </div>
                         <div className="text-xs" style={{ color: '#94A3B8' }}>
-                          {search ? 'Try a different name or email.' : 'Clients will appear here once they book an appointment.'}
+                          {search ? t('clients.empty.trySearch') : t('clients.empty.noClientsDesc')}
                         </div>
                       </td>
                     </tr>
@@ -208,18 +210,18 @@ export default function ClientsPage() {
         >
           <div
             className="w-full max-w-sm overflow-y-auto"
-            style={{ backgroundColor: 'white', borderLeft: '1px solid #E8E0D0' }}
+            style={{ backgroundColor: 'white', borderLeft: '1px solid var(--plx-border)' }}
           >
             {/* Header */}
             <div
               className="sticky top-0 flex items-center justify-between px-5 py-4"
-              style={{ borderBottom: '1px solid #E8E0D0', backgroundColor: 'white' }}
+              style={{ borderBottom: '1px solid var(--plx-border)', backgroundColor: 'white' }}
             >
               <h2
                 className="text-lg"
                 style={{ fontFamily: 'Fraunces, serif', fontWeight: 400, color: '#1E293B' }}
               >
-                Client Profile
+                {t('clients.profile.title')}
               </h2>
               <button
                 onClick={() => setSelectedClient(null)}
@@ -237,7 +239,7 @@ export default function ClientsPage() {
               <div className="flex items-center gap-3">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold"
-                  style={{ backgroundColor: '#D8F3DC', color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}
+                  style={{ backgroundColor: 'var(--plx-pale)', color: 'var(--plx-primary)', fontFamily: 'DM Sans, sans-serif' }}
                 >
                   {selectedClient.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </div>
@@ -246,7 +248,7 @@ export default function ClientsPage() {
                     {selectedClient.name}
                   </div>
                   <div className="text-sm" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                    Client since {formatDate(selectedClient.last_appointment ?? new Date().toISOString().split('T')[0])}
+                    {t('clients.profile.clientSince')} {formatDate(selectedClient.last_appointment ?? new Date().toISOString().split('T')[0])}
                   </div>
                 </div>
               </div>
@@ -270,23 +272,23 @@ export default function ClientsPage() {
                 <div className="planexa-card p-3 text-center">
                   <div
                     className="text-xl"
-                    style={{ fontFamily: 'Fraunces, serif', color: '#2D6A4F', fontWeight: 400 }}
+                    style={{ fontFamily: 'Fraunces, serif', color: 'var(--plx-primary)', fontWeight: 400 }}
                   >
                     {selectedClient.total_bookings}
                   </div>
                   <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                    Total Bookings
+                    {t('clients.profile.totalBookings')}
                   </div>
                 </div>
                 <div className="planexa-card p-3 text-center">
                   <div
                     className="text-xl"
-                    style={{ fontFamily: 'Fraunces, serif', color: '#2D6A4F', fontWeight: 400 }}
+                    style={{ fontFamily: 'Fraunces, serif', color: 'var(--plx-primary)', fontWeight: 400 }}
                   >
                     {formatPrice(selectedClient.total_spent_cents)}
                   </div>
                   <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                    Total Spent
+                    {t('clients.profile.totalSpent')}
                   </div>
                 </div>
               </div>
@@ -295,7 +297,7 @@ export default function ClientsPage() {
               {selectedClient.notes && (
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                    Notes
+                    {t('clients.profile.notes')}
                   </div>
                   <p className="text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
                     {selectedClient.notes}
@@ -306,25 +308,25 @@ export default function ClientsPage() {
               {/* Appointment History */}
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                  Appointment History
+                  {t('clients.profile.history')}
                 </div>
                 {clientAppointments.length === 0 ? (
-                  <p className="text-sm" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>No appointments found.</p>
+                  <p className="text-sm" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>{t('clients.profile.noAppointments')}</p>
                 ) : (
                   <div className="space-y-2">
                     {clientAppointments.map(appt => {
                       const dt = new Date(appt.startTime);
-                      const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                      const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                      const dateStr = dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                      const timeStr = dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
                       return (
                         <div
                           key={appt.id}
                           className="flex items-center gap-3 py-2"
-                          style={{ borderBottom: '1px solid #E8E0D0' }}
+                          style={{ borderBottom: '1px solid var(--plx-border)' }}
                         >
                           <div
                             className="w-2 h-2 rounded-full shrink-0"
-                            style={{ backgroundColor: '#2D6A4F' }}
+                            style={{ backgroundColor: 'var(--plx-primary)' }}
                           />
                           <div className="flex-1">
                             <div className="text-xs font-medium" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
@@ -337,8 +339,8 @@ export default function ClientsPage() {
                           <span
                             className="text-xs px-1.5 py-0.5 rounded-full capitalize"
                             style={{
-                              backgroundColor: appt.status === 'scheduled' ? '#D8F3DC' : '#F1F5F9',
-                              color: appt.status === 'scheduled' ? '#2D6A4F' : '#475569',
+                              backgroundColor: appt.status === 'scheduled' ? 'var(--plx-pale)' : '#F1F5F9',
+                              color: appt.status === 'scheduled' ? 'var(--plx-primary)' : '#475569',
                               fontFamily: 'DM Sans, sans-serif',
                             }}
                           >
@@ -358,12 +360,12 @@ export default function ClientsPage() {
                   setSelectedClient(null);
                 }}
                 className="w-full py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
-                style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+                style={{ backgroundColor: 'var(--plx-primary)', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--plx-hover)')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--plx-primary)')}
               >
                 <Calendar size={14} />
-                + Book for {selectedClient.name.split(' ')[0]}
+                {t('clients.profile.bookFor')} {selectedClient.name.split(' ')[0]}
               </button>
             </div>
           </div>

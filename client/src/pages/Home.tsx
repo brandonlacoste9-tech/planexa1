@@ -4,6 +4,7 @@
 
 import { useAuth } from '@/_core/hooks/useAuth';
 import { Link } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { Calendar, Users, BarChart2, Settings, ArrowRight, Check, Star } from 'lucide-react';
 
 const HERO_BG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663463499911/XkFRBSJqRpfu5RhGJQf3Nn/planexa-hero-bg-DDUhr6nNsPQdWN2ua6Nxbe.webp';
@@ -11,82 +12,43 @@ const DASHBOARD_IMG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663463499911/
 const ANALYTICS_IMG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663463499911/XkFRBSJqRpfu5RhGJQf3Nn/planexa-analytics-preview-ie3WT7gnwDyBhtWk3zH2Tc.webp';
 const BOOKING_IMG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663463499911/XkFRBSJqRpfu5RhGJQf3Nn/planexa-booking-preview-dShMohpcLSgweLyost556b.webp';
 
-const features = [
-  {
-    icon: Calendar,
-    title: 'Smart Calendar',
-    description: 'Weekly calendar view with drag-and-drop rescheduling, color-coded appointment types, and real-time availability.',
-  },
-  {
-    icon: Users,
-    title: 'Client Management',
-    description: 'Full client profiles with appointment history, notes, and one-click rebooking. Never lose track of a relationship.',
-  },
-  {
-    icon: BarChart2,
-    title: 'Analytics Dashboard',
-    description: 'Revenue tracking, show rate metrics, and appointment breakdowns. Understand your business at a glance.',
-  },
-  {
-    icon: Settings,
-    title: 'Custom Booking Page',
-    description: 'A beautiful, branded booking page your clients can use 24/7. Set your services, pricing, and availability.',
-  },
-];
-
-const testimonials = [
-  {
-    name: 'Sarah Chen',
-    role: 'Executive Coach',
-    text: 'Planexa replaced three tools I was using. My clients love the booking experience, and I love the calendar.',
-    rating: 5,
-  },
-  {
-    name: 'Marcus Okafor',
-    role: 'Consulting Firm Owner',
-    text: 'The drag-and-drop calendar alone is worth it. Rescheduling used to take 10 minutes of back-and-forth. Now it\'s 2 seconds.',
-    rating: 5,
-  },
-  {
-    name: 'Priya Nair',
-    role: 'Wellness Studio',
-    text: 'Our no-show rate dropped 40% after switching to Planexa\'s automated reminders. Incredible ROI.',
-    rating: 5,
-  },
-];
-
-const pricingPlans = [
-  {
-    name: 'Starter',
-    price: '$19',
-    period: '/month',
-    description: 'Perfect for solo practitioners',
-    features: ['Up to 50 appointments/month', '1 team member', 'Custom booking page', 'Email reminders', 'Basic analytics'],
-    cta: 'Start Free Trial',
-    highlighted: false,
-  },
-  {
-    name: 'Professional',
-    price: '$49',
-    period: '/month',
-    description: 'For growing businesses',
-    features: ['Unlimited appointments', 'Up to 5 team members', 'Custom booking page', 'Email + SMS reminders', 'Advanced analytics', 'Calendar integrations', 'Priority support'],
-    cta: 'Start Free Trial',
-    highlighted: true,
-  },
-  {
-    name: 'Enterprise',
-    price: '$99',
-    period: '/month',
-    description: 'For large teams',
-    features: ['Unlimited everything', 'Unlimited team members', 'White-label booking page', 'Custom integrations', 'Dedicated account manager', 'SLA guarantee'],
-    cta: 'Contact Sales',
-    highlighted: false,
-  },
-];
-
 export default function Home() {
+  const { t } = useTranslation();
   const { user, loading, error, isAuthenticated, logout } = useAuth();
+
+  const features = [
+    { icon: Calendar, title: t('home.features.calendar.title'), description: t('home.features.calendar.desc') },
+    { icon: Users,    title: t('home.features.clients.title'),  description: t('home.features.clients.desc') },
+    { icon: BarChart2,title: t('home.features.analytics.title'),description: t('home.features.analytics.desc') },
+    { icon: Settings, title: t('home.features.booking.title'),  description: t('home.features.booking.desc') },
+  ];
+
+  const testimonials = [
+    { name: 'Sarah Chen',    role: t('home.testimonials.0.role'), text: t('home.testimonials.0.text'), rating: 5 },
+    { name: 'Marcus Okafor', role: t('home.testimonials.1.role'), text: t('home.testimonials.1.text'), rating: 5 },
+    { name: 'Priya Nair',    role: t('home.testimonials.2.role'), text: t('home.testimonials.2.text'), rating: 5 },
+  ];
+
+  const pricingPlans = [
+    {
+      name: t('home.pricing.starter.name'), price: '$19', period: t('home.pricing.perMonth'),
+      description: t('home.pricing.starter.desc'),
+      features: [t('home.pricing.starter.f1'), t('home.pricing.starter.f2'), t('home.pricing.starter.f3'), t('home.pricing.starter.f4'), t('home.pricing.starter.f5')],
+      cta: t('home.pricing.startTrial'), highlighted: false,
+    },
+    {
+      name: t('home.pricing.pro.name'), price: '$49', period: t('home.pricing.perMonth'),
+      description: t('home.pricing.pro.desc'),
+      features: [t('home.pricing.pro.f1'), t('home.pricing.pro.f2'), t('home.pricing.pro.f3'), t('home.pricing.pro.f4'), t('home.pricing.pro.f5'), t('home.pricing.pro.f6'), t('home.pricing.pro.f7')],
+      cta: t('home.pricing.startTrial'), highlighted: true,
+    },
+    {
+      name: t('home.pricing.enterprise.name'), price: '$99', period: t('home.pricing.perMonth'),
+      description: t('home.pricing.enterprise.desc'),
+      features: [t('home.pricing.enterprise.f1'), t('home.pricing.enterprise.f2'), t('home.pricing.enterprise.f3'), t('home.pricing.enterprise.f4'), t('home.pricing.enterprise.f5'), t('home.pricing.enterprise.f6')],
+      cta: t('home.pricing.contactSales'), highlighted: false,
+    },
+  ];
 
   return (
     <div style={{ backgroundColor: '#FAF7F2', fontFamily: 'DM Sans, sans-serif', minHeight: '100vh' }}>
@@ -106,16 +68,20 @@ export default function Home() {
         </Link>
         <div className="flex-1" />
         <div className="hidden md:flex items-center gap-6 mr-6">
-          {['Features', 'Pricing', 'Docs'].map(item => (
+          {[
+            [t('home.nav.features'), 'features'],
+            [t('home.nav.pricing'),  'pricing'],
+            [t('home.nav.docs'),     'docs'],
+          ].map(([label, anchor]) => (
             <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
+              key={anchor}
+              href={`#${anchor}`}
               className="text-sm transition-colors"
               style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}
               onMouseEnter={e => (e.currentTarget.style.color = '#52B788')}
               onMouseLeave={e => (e.currentTarget.style.color = '#94A3B8')}
             >
-              {item}
+              {label}
             </a>
           ))}
         </div>
@@ -127,7 +93,7 @@ export default function Home() {
                 className="text-sm px-3 py-1.5 rounded-md transition-colors"
                 style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
               >
-                Dashboard
+                {t('home.nav.dashboard')}
               </Link>
               <button
                 onClick={() => logout()}
@@ -136,7 +102,7 @@ export default function Home() {
                 onMouseEnter={e => (e.currentTarget.style.color = '#52B788')}
                 onMouseLeave={e => (e.currentTarget.style.color = '#94A3B8')}
               >
-                Sign out
+                {t('home.nav.signOut')}
               </button>
             </>
           ) : (
@@ -146,7 +112,7 @@ export default function Home() {
                 className="text-sm px-3 py-1.5 rounded-md transition-colors"
                 style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}
               >
-                Sign in
+                {t('home.nav.signIn')}
               </Link>
               <Link
                 href="/calendar"
@@ -155,7 +121,7 @@ export default function Home() {
                 onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
               >
-                Get Started
+                {t('home.nav.getStarted')}
               </Link>
             </>
           )}
@@ -179,19 +145,19 @@ export default function Home() {
               style={{ backgroundColor: '#D8F3DC', color: '#2D6A4F' }}
             >
               <span className="pulse-dot" />
-              Now in public beta
+              {t('home.hero.badge')}
             </div>
             <h1
               className="text-5xl md:text-6xl leading-tight mb-6"
               style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: '#1E293B', fontStyle: 'italic' }}
             >
-              Scheduling that works as hard as you do
+              {t('home.hero.headline')}
             </h1>
             <p
               className="text-lg mb-8 leading-relaxed"
               style={{ color: '#475569', maxWidth: 480 }}
             >
-              Planexa gives businesses a beautiful, intelligent scheduling platform — from client-facing booking pages to a powerful team calendar.
+              {t('home.hero.subheadline')}
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -201,7 +167,7 @@ export default function Home() {
                 onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
               >
-                Open Dashboard
+                {t('home.hero.openDashboard')}
                 <ArrowRight size={14} />
               </Link>
               <Link
@@ -211,7 +177,7 @@ export default function Home() {
                 onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'white')}
               >
-                See Booking Page
+                {t('home.hero.seeBookingPage')}
               </Link>
             </div>
             <div className="flex items-center gap-4 mt-8">
@@ -230,7 +196,7 @@ export default function Home() {
                 ))}
               </div>
               <span className="text-sm" style={{ color: '#64748B' }}>
-                Trusted by <strong style={{ color: '#1E293B' }}>2,400+</strong> businesses
+                {t('home.hero.trustedBy', { count: '2,400+' })}
               </span>
             </div>
           </div>
@@ -245,10 +211,10 @@ export default function Home() {
               className="text-3xl md:text-4xl mb-4"
               style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: '#1E293B', fontStyle: 'italic' }}
             >
-              Everything in one place
+              {t('home.preview.title')}
             </h2>
             <p className="text-base" style={{ color: '#64748B', maxWidth: 480, margin: '0 auto' }}>
-              A powerful calendar dashboard with sidebar navigation, team management, and real-time updates.
+              {t('home.preview.desc')}
             </p>
           </div>
           <div
@@ -272,7 +238,7 @@ export default function Home() {
               className="text-3xl md:text-4xl mb-4"
               style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: '#1E293B', fontStyle: 'italic' }}
             >
-              Built for real businesses
+              {t('home.features.sectionTitle')}
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -314,13 +280,13 @@ export default function Home() {
                 className="text-3xl mb-4"
                 style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: '#1E293B', fontStyle: 'italic' }}
               >
-                Data-driven insights
+                {t('home.analytics.title')}
               </h2>
               <p className="text-base mb-4 leading-relaxed" style={{ color: '#64748B' }}>
-                Track revenue, show rates, and appointment trends with beautiful charts. Know exactly how your business is performing.
+                {t('home.analytics.desc')}
               </p>
               <div className="space-y-2">
-                {['Bar, line, and donut charts', 'Revenue tracking', 'Show rate analytics', 'Recent activity feed'].map(f => (
+                {[t('home.analytics.f1'), t('home.analytics.f2'), t('home.analytics.f3'), t('home.analytics.f4')].map(f => (
                   <div key={f} className="flex items-center gap-2 text-sm" style={{ color: '#475569' }}>
                     <Check size={14} style={{ color: '#2D6A4F' }} />
                     {f}
@@ -348,17 +314,17 @@ export default function Home() {
                 className="text-3xl mb-4"
                 style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: '#1E293B', fontStyle: 'italic' }}
               >
-                A booking page clients love
+                {t('home.bookingPage.title')}
               </h2>
               <p className="text-base mb-4 leading-relaxed" style={{ color: '#64748B' }}>
-                Your clients get a beautiful, mobile-friendly booking experience. No accounts required — just pick a service, date, and time.
+                {t('home.bookingPage.desc')}
               </p>
               <Link
                 href="/book/jmitchell"
                 className="inline-flex items-center gap-2 text-sm font-medium transition-colors"
                 style={{ color: '#2D6A4F' }}
               >
-                Try the demo booking page
+                {t('home.bookingPage.tryDemo')}
                 <ArrowRight size={13} />
               </Link>
             </div>
@@ -374,7 +340,7 @@ export default function Home() {
               className="text-3xl md:text-4xl mb-4"
               style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: 'white', fontStyle: 'italic' }}
             >
-              Loved by businesses
+              {t('home.testimonials.sectionTitle')}
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -412,10 +378,10 @@ export default function Home() {
               className="text-3xl md:text-4xl mb-4"
               style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: '#1E293B', fontStyle: 'italic' }}
             >
-              Simple, transparent pricing
+              {t('home.pricing.sectionTitle')}
             </h2>
             <p className="text-base" style={{ color: '#64748B' }}>
-              14-day free trial on all plans. No credit card required.
+              {t('home.pricing.trialNote')}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -435,7 +401,7 @@ export default function Home() {
                     className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-medium"
                     style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
                   >
-                    Most Popular
+                    {t('home.pricing.mostPopular')}
                   </div>
                 )}
                 <div className="mb-4">
@@ -500,10 +466,10 @@ export default function Home() {
             className="text-3xl md:text-4xl mb-4"
             style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: 'white', fontStyle: 'italic' }}
           >
-            Ready to take control of your schedule?
+            {t('home.cta.title')}
           </h2>
           <p className="text-base mb-8" style={{ color: '#94A3B8' }}>
-            Join thousands of businesses using Planexa to manage their time better.
+            {t('home.cta.subtitle')}
           </p>
           <Link
             href="/calendar"
@@ -512,7 +478,7 @@ export default function Home() {
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#52B788')}
           >
-            Start Free Trial
+            {t('home.pricing.startTrial')}
             <ArrowRight size={14} />
           </Link>
         </div>
@@ -534,7 +500,7 @@ export default function Home() {
             <span className="text-xs" style={{ color: '#475569' }}>© 2026</span>
           </div>
           <div className="flex gap-6">
-            {['Privacy', 'Terms', 'Support'].map(item => (
+            {[t('home.footer.privacy'), t('home.footer.terms'), t('home.footer.support')].map(item => (
               <a
                 key={item}
                 href="#"
