@@ -87,4 +87,36 @@ export const settingsRouter = router({
       );
       return { success: true as const };
     }),
+
+  getClients: protectedProcedure.query(async ({ ctx }) => {
+    const [clientList, apptList] = await Promise.all([
+      db.getClientsByUserId(ctx.user.id),
+      db.getAppointmentsByUserId(ctx.user.id),
+    ]);
+
+    return clientList.map(c => {
+      const clientAppts = apptList.filter(a => a.clientId === c.id);
+      const lastAppt = clientAppts[0];
+      const totalSpentCents = clientAppts
+        .filter(a => a.paymentStatus === "paid")
+        .reduce((sum, a) => sum + Math.round(parseFloat(a.price || "0") * 100), 0);
+
+      return {
+        id: c.id,
+        name: c.name,
+        email: c.email,
+        phone: c.phoneNumber ?? "",
+        notes: c.notes ?? null,
+        last_appointment: lastAppt?.startTime?.toISOString().split("T")[0] ?? c.createdAt.toISOString().split("T")[0],
+        total_bookings: clientAppts.length,
+        total_spent_cents: totalSpentCents,
+        appointments: clientAppts.map(a => ({
+          id: a.id,
+          appointmentType: a.appointmentType,
+          startTime: a.startTime.toISOString(),
+          status: a.status,
+        })),
+      };
+    });
+  }),
 });

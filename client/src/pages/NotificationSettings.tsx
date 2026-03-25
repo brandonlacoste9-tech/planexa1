@@ -1,14 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mail, MessageSquare, Phone, Bell } from 'lucide-react';
+import { Mail, MessageSquare, Phone, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/_core/hooks/useAuth';
 
 export default function NotificationSettings() {
+  const { isAuthenticated } = useAuth();
+  const { data: prefs, isLoading } = trpc.notifications.getPreferences.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+  const updateMutation = trpc.notifications.updatePreferences.useMutation({
+    onSuccess: () => toast.success('Notification preferences saved!'),
+    onError: () => toast.error('Failed to save preferences'),
+  });
+
   const [emailPrefs, setEmailPrefs] = useState({
     bookingConfirmation: true,
     paymentReceipt: true,
@@ -29,27 +41,50 @@ export default function NotificationSettings() {
     callReminder: false,
   });
 
-  const handleEmailChange = (key: string, value: boolean) => {
-    setEmailPrefs({ ...emailPrefs, [key]: value });
+  useEffect(() => {
+    if (!prefs) return;
+    setEmailPrefs({
+      bookingConfirmation: prefs.emailBookingConfirmation ?? true,
+      paymentReceipt: prefs.emailPaymentReceipt ?? true,
+      trialReminder: prefs.emailTrialReminder ?? true,
+      appointmentReminder: prefs.emailAppointmentReminder ?? true,
+    });
+    setSmsPrefs({
+      enabled: prefs.smsEnabled ?? false,
+      phoneNumber: prefs.smsPhoneNumber ?? '',
+      reminder24h: prefs.smsAppointmentReminder24h ?? true,
+      reminder1h: prefs.smsAppointmentReminder1h ?? true,
+    });
+    setVoicePrefs({
+      enabled: prefs.voiceEnabled ?? false,
+      phoneNumber: prefs.voicePhoneNumber ?? '',
+      callReminder: prefs.voiceCallReminder ?? false,
+    });
+  }, [prefs]);
+
+  const handleSave = () => {
+    updateMutation.mutate({
+      emailBookingConfirmation: emailPrefs.bookingConfirmation,
+      emailPaymentReceipt: emailPrefs.paymentReceipt,
+      emailTrialReminder: emailPrefs.trialReminder,
+      emailAppointmentReminder: emailPrefs.appointmentReminder,
+      smsEnabled: smsPrefs.enabled,
+      smsPhoneNumber: smsPrefs.phoneNumber || undefined,
+      smsAppointmentReminder24h: smsPrefs.reminder24h,
+      smsAppointmentReminder1h: smsPrefs.reminder1h,
+      voiceEnabled: voicePrefs.enabled,
+      voicePhoneNumber: voicePrefs.phoneNumber || undefined,
+      voiceCallReminder: voicePrefs.callReminder,
+    });
   };
 
-  const handleSmsChange = (key: string, value: any) => {
-    setSmsPrefs({ ...smsPrefs, [key]: value });
-  };
-
-  const handleVoiceChange = (key: string, value: any) => {
-    setVoicePrefs({ ...voicePrefs, [key]: value });
-  };
-
-  const handleSavePreferences = async () => {
-    try {
-      // TODO: Call API to save preferences
-      console.log('Saving preferences:', { emailPrefs, smsPrefs, voicePrefs });
-      toast.success('Notification preferences saved!');
-    } catch (error) {
-      toast.error('Failed to save preferences');
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FAF7F2' }}>
+        <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#2D6A4F' }} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -90,65 +125,23 @@ export default function NotificationSettings() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <Label className="text-base font-medium">Booking Confirmations</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Get notified when a new booking is confirmed
-                    </p>
+                {[
+                  { key: 'bookingConfirmation', label: 'Booking Confirmations', desc: 'Get notified when a new booking is confirmed' },
+                  { key: 'paymentReceipt', label: 'Payment Receipts', desc: 'Receive email receipts for payments' },
+                  { key: 'trialReminder', label: 'Trial Reminders', desc: 'Get reminded before your free trial expires' },
+                  { key: 'appointmentReminder', label: 'Appointment Reminders', desc: 'Get reminded about upcoming appointments' },
+                ].map(({ key, label, desc }) => (
+                  <div key={key} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <Label className="text-base font-medium">{label}</Label>
+                      <p className="text-sm text-muted-foreground">{desc}</p>
+                    </div>
+                    <Switch
+                      checked={emailPrefs[key as keyof typeof emailPrefs] as boolean}
+                      onCheckedChange={v => setEmailPrefs(p => ({ ...p, [key]: v }))}
+                    />
                   </div>
-                  <Switch
-                    checked={emailPrefs.bookingConfirmation}
-                    onCheckedChange={(value) =>
-                      handleEmailChange('bookingConfirmation', value)
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <Label className="text-base font-medium">Payment Receipts</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive email receipts for payments
-                    </p>
-                  </div>
-                  <Switch
-                    checked={emailPrefs.paymentReceipt}
-                    onCheckedChange={(value) =>
-                      handleEmailChange('paymentReceipt', value)
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <Label className="text-base font-medium">Trial Reminders</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Get reminded before your free trial expires
-                    </p>
-                  </div>
-                  <Switch
-                    checked={emailPrefs.trialReminder}
-                    onCheckedChange={(value) =>
-                      handleEmailChange('trialReminder', value)
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <Label className="text-base font-medium">Appointment Reminders</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Get reminded about upcoming appointments
-                    </p>
-                  </div>
-                  <Switch
-                    checked={emailPrefs.appointmentReminder}
-                    onCheckedChange={(value) =>
-                      handleEmailChange('appointmentReminder', value)
-                    }
-                  />
-                </div>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>
@@ -169,13 +162,11 @@ export default function NotificationSettings() {
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <Label className="text-base font-medium">Enable SMS Reminders</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive text messages for appointment reminders
-                    </p>
+                    <p className="text-sm text-muted-foreground">Receive text messages for appointment reminders</p>
                   </div>
                   <Switch
                     checked={smsPrefs.enabled}
-                    onCheckedChange={(value) => handleSmsChange('enabled', value)}
+                    onCheckedChange={v => setSmsPrefs(p => ({ ...p, enabled: v }))}
                   />
                 </div>
 
@@ -188,42 +179,28 @@ export default function NotificationSettings() {
                         type="tel"
                         placeholder="+1 (555) 000-0000"
                         value={smsPrefs.phoneNumber}
-                        onChange={(e) =>
-                          handleSmsChange('phoneNumber', e.target.value)
-                        }
+                        onChange={e => setSmsPrefs(p => ({ ...p, phoneNumber: e.target.value }))}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Include country code (e.g., +1 for US)
-                      </p>
+                      <p className="text-xs text-muted-foreground">Include country code (e.g., +1 for US)</p>
                     </div>
-
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <Label className="text-base font-medium">24-Hour Reminder</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Remind me 24 hours before appointment
-                        </p>
+                        <p className="text-sm text-muted-foreground">Remind me 24 hours before appointment</p>
                       </div>
                       <Switch
                         checked={smsPrefs.reminder24h}
-                        onCheckedChange={(value) =>
-                          handleSmsChange('reminder24h', value)
-                        }
+                        onCheckedChange={v => setSmsPrefs(p => ({ ...p, reminder24h: v }))}
                       />
                     </div>
-
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <Label className="text-base font-medium">1-Hour Reminder</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Remind me 1 hour before appointment
-                        </p>
+                        <p className="text-sm text-muted-foreground">Remind me 1 hour before appointment</p>
                       </div>
                       <Switch
                         checked={smsPrefs.reminder1h}
-                        onCheckedChange={(value) =>
-                          handleSmsChange('reminder1h', value)
-                        }
+                        onCheckedChange={v => setSmsPrefs(p => ({ ...p, reminder1h: v }))}
                       />
                     </div>
                   </>
@@ -248,13 +225,11 @@ export default function NotificationSettings() {
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <Label className="text-base font-medium">Enable Voice Calls</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive phone call reminders for appointments
-                    </p>
+                    <p className="text-sm text-muted-foreground">Receive phone call reminders for appointments</p>
                   </div>
                   <Switch
                     checked={voicePrefs.enabled}
-                    onCheckedChange={(value) => handleVoiceChange('enabled', value)}
+                    onCheckedChange={v => setVoicePrefs(p => ({ ...p, enabled: v }))}
                   />
                 </div>
 
@@ -267,30 +242,20 @@ export default function NotificationSettings() {
                         type="tel"
                         placeholder="+1 (555) 000-0000"
                         value={voicePrefs.phoneNumber}
-                        onChange={(e) =>
-                          handleVoiceChange('phoneNumber', e.target.value)
-                        }
+                        onChange={e => setVoicePrefs(p => ({ ...p, phoneNumber: e.target.value }))}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Include country code (e.g., +1 for US)
-                      </p>
+                      <p className="text-xs text-muted-foreground">Include country code (e.g., +1 for US)</p>
                     </div>
-
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <Label className="text-base font-medium">Appointment Reminders</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive voice call reminders before appointments
-                        </p>
+                        <p className="text-sm text-muted-foreground">Receive voice call reminders before appointments</p>
                       </div>
                       <Switch
                         checked={voicePrefs.callReminder}
-                        onCheckedChange={(value) =>
-                          handleVoiceChange('callReminder', value)
-                        }
+                        onCheckedChange={v => setVoicePrefs(p => ({ ...p, callReminder: v }))}
                       />
                     </div>
-
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-sm text-blue-900">
                         <strong>Note:</strong> Voice calls are automated and may incur additional charges depending on your service provider.
@@ -305,13 +270,18 @@ export default function NotificationSettings() {
 
         <div className="mt-8 flex gap-4">
           <Button
-            onClick={handleSavePreferences}
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
             className="bg-green-600 hover:bg-green-700"
           >
-            <Bell className="w-4 h-4 mr-2" />
+            {updateMutation.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Bell className="w-4 h-4 mr-2" />
+            )}
             Save Preferences
           </Button>
-          <Button variant="outline">Cancel</Button>
+          <Button variant="outline" onClick={() => window.history.back()}>Cancel</Button>
         </div>
       </div>
     </div>

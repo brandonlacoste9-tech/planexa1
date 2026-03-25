@@ -2,21 +2,25 @@
 // Design: Table view with search/filter, client detail slide-over
 
 import { useState } from 'react';
-import { Search, ChevronRight, Phone, Mail, Calendar, DollarSign, X, Plus } from 'lucide-react';
-import { toast } from 'sonner';
+import { Search, ChevronRight, Phone, Mail, Calendar, X, Plus } from 'lucide-react';
 import DashboardNav from '../components/layout/DashboardNav';
 import DashboardFooter from '../components/layout/DashboardFooter';
 import NewAppointmentModal from '../components/modals/NewAppointmentModal';
-import {
-  getAppointmentType,
-  formatPrice,
-  formatTime12h,
-  type Client,
-  type Appointment,
-} from '../lib/data';
+import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/_core/hooks/useAuth';
+import { formatPrice } from '@/lib/data';
 
-const clients: Client[] = [];
-const appointments: Appointment[] = [];
+type ApiClient = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  notes: string | null;
+  last_appointment: string;
+  total_bookings: number;
+  total_spent_cents: number;
+  appointments: Array<{ id: number; appointmentType: string; startTime: string; status: string }>;
+};
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
@@ -30,7 +34,7 @@ function ClientRow({
   client,
   onClick,
 }: {
-  client: Client;
+  client: ApiClient;
   onClick: () => void;
 }) {
   return (
@@ -63,7 +67,7 @@ function ClientRow({
         {client.email}
       </td>
       <td className="px-4 py-3 text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-        {client.phone}
+        {client.phone || '—'}
       </td>
       <td className="px-4 py-3 text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
         {formatDate(client.last_appointment)}
@@ -82,18 +86,22 @@ function ClientRow({
 }
 
 export default function ClientsPage() {
+  const { isAuthenticated } = useAuth();
   const [search, setSearch] = useState('');
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClient, setSelectedClient] = useState<ApiClient | null>(null);
   const [showBookModal, setShowBookModal] = useState(false);
+
+  const { data: clients = [], isLoading } = trpc.settings.getClients.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
 
   const filtered = clients.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const clientAppointments = selectedClient
-    ? appointments.filter(a => a.client_email === selectedClient.email)
-    : [];
+  const clientAppointments = selectedClient?.appointments ?? [];
 
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: '#FAF7F2' }}>
@@ -111,7 +119,7 @@ export default function ClientsPage() {
                 Clients
               </h1>
               <p className="text-sm mt-0.5" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                {clients.length} total clients
+                {isLoading ? 'Loading…' : `${clients.length} total client${clients.length !== 1 ? 's' : ''}`}
               </p>
             </div>
             <button
@@ -238,7 +246,7 @@ export default function ClientsPage() {
                     {selectedClient.name}
                   </div>
                   <div className="text-sm" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                    Client since {formatDate(selectedClient.last_appointment)}
+                    Client since {formatDate(selectedClient.last_appointment ?? new Date().toISOString().split('T')[0])}
                   </div>
                 </div>
               </div>
@@ -249,10 +257,12 @@ export default function ClientsPage() {
                   <Mail size={13} style={{ color: '#94A3B8' }} />
                   {selectedClient.email}
                 </div>
-                <div className="flex items-center gap-2 text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-                  <Phone size={13} style={{ color: '#94A3B8' }} />
-                  {selectedClient.phone}
-                </div>
+                {selectedClient.phone && (
+                  <div className="flex items-center gap-2 text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
+                    <Phone size={13} style={{ color: '#94A3B8' }} />
+                    {selectedClient.phone}
+                  </div>
+                )}
               </div>
 
               {/* Stats */}
@@ -303,7 +313,9 @@ export default function ClientsPage() {
                 ) : (
                   <div className="space-y-2">
                     {clientAppointments.map(appt => {
-                      const type = getAppointmentType(appt.appointment_type_id);
+                      const dt = new Date(appt.startTime);
+                      const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                      const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                       return (
                         <div
                           key={appt.id}
@@ -312,21 +324,21 @@ export default function ClientsPage() {
                         >
                           <div
                             className="w-2 h-2 rounded-full shrink-0"
-                            style={{ backgroundColor: type?.color_hex || '#2D6A4F' }}
+                            style={{ backgroundColor: '#2D6A4F' }}
                           />
                           <div className="flex-1">
                             <div className="text-xs font-medium" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
-                              {type?.name}
+                              {appt.appointmentType}
                             </div>
                             <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                              {formatDate(appt.date)} · {formatTime12h(appt.start_time)}
+                              {dateStr} · {timeStr}
                             </div>
                           </div>
                           <span
                             className="text-xs px-1.5 py-0.5 rounded-full capitalize"
                             style={{
-                              backgroundColor: appt.status === 'confirmed' ? '#D8F3DC' : '#F1F5F9',
-                              color: appt.status === 'confirmed' ? '#2D6A4F' : '#475569',
+                              backgroundColor: appt.status === 'scheduled' ? '#D8F3DC' : '#F1F5F9',
+                              color: appt.status === 'scheduled' ? '#2D6A4F' : '#475569',
                               fontFamily: 'DM Sans, sans-serif',
                             }}
                           >

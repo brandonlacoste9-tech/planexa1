@@ -9,6 +9,10 @@ import {
   upsertBookingClient,
   createAppointmentRecord,
 } from "./db";
+import {
+  sendBookingConfirmationEmail,
+  sendOwnerBookingNotificationEmail,
+} from "./notifications/email";
 
 const DEFAULT_AVAILABILITY = [
   { dayOfWeek: 0, startTime: "09:00", endTime: "17:00", isEnabled: false }, // Sun
@@ -162,6 +166,32 @@ export const bookingRouter = router({
         endTime,
         notes: input.notes,
       });
+
+      // Fire-and-forget confirmation emails
+      const dateStr = startTime.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+      const timeStr = startTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      sendBookingConfirmationEmail(
+        input.clientEmail,
+        input.clientName,
+        input.appointmentTypeName,
+        dateStr,
+        timeStr,
+        input.durationMinutes,
+        input.priceCents / 100,
+        user.businessName ?? undefined
+      ).catch(err => console.error("[Booking] Failed to send client confirmation email:", err));
+
+      if (user.email) {
+        sendOwnerBookingNotificationEmail(
+          user.email,
+          user.name ?? "there",
+          input.clientName,
+          input.clientEmail,
+          input.appointmentTypeName,
+          dateStr,
+          timeStr
+        ).catch(err => console.error("[Booking] Failed to send owner notification email:", err));
+      }
 
       return { success: true, bookingId: appt.id };
     }),

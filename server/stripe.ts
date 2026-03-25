@@ -11,6 +11,7 @@ import {
   updatePaymentStatus,
   updateUserStripeCustomerId,
   getPaymentByStripePaymentIntentId,
+  getUserPayments,
 } from './db';
 import { TRPCError } from '@trpc/server';
 import { TRIAL_PERIOD_DAYS } from '@shared/const';
@@ -142,10 +143,14 @@ export const stripeRouter = router({
           },
         });
 
-        // Create payment record
+        // Use session ID as placeholder for payment intent (resolved on webhook)
+        const paymentIntentId = typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent?.id ?? session.id;
+
         await createPayment({
           userId: user.id,
-          stripePaymentIntentId: session.payment_intent?.toString() || '',
+          stripePaymentIntentId: paymentIntentId,
           stripeCheckoutSessionId: session.id,
           appointmentTypeId: input.appointmentTypeId,
           amount: (input.priceCents / 100).toString(),
@@ -181,9 +186,7 @@ export const stripeRouter = router({
         });
       }
 
-      // This would be implemented with a database query
-      // For now, return empty array as placeholder
-      return [];
+      return getUserPayments(user.id);
     } catch (error) {
       console.error('[Stripe] Payment history fetch failed:', error);
       throw new TRPCError({

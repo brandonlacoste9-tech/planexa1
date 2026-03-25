@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, lt, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, lt, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import {
@@ -150,6 +150,20 @@ export async function upsertAvailabilityForDay(
       target: [availability.userId, availability.dayOfWeek],
       set: data,
     });
+}
+
+// ─── Clients ─────────────────────────────────────────────────────────────────
+
+export async function getClientsByUserId(userId: number): Promise<Client[]> {
+  const db = getDb();
+  if (!db) return [];
+  return db.select().from(clients).where(eq(clients.userId, userId)).orderBy(desc(clients.createdAt));
+}
+
+export async function getAppointmentsByUserId(userId: number): Promise<Appointment[]> {
+  const db = getDb();
+  if (!db) return [];
+  return db.select().from(appointments).where(eq(appointments.userId, userId)).orderBy(desc(appointments.startTime));
 }
 
 // ─── Booking ─────────────────────────────────────────────────────────────────

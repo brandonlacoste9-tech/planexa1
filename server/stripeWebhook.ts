@@ -5,7 +5,9 @@
 
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
-import { updatePaymentStatus } from './db';
+import { eq } from 'drizzle-orm';
+import { updatePaymentStatus, getDb } from './db';
+import { payments } from '../drizzle/schema';
 import { stripe } from './stripeClient';
 
 /**
@@ -40,13 +42,21 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         const session = event.data.object as Stripe.Checkout.Session;
         console.log('[Stripe Webhook] Checkout session completed:', session.id);
 
-        if (session.payment_intent) {
+        const db = getDb();
+        if (db) {
           const paymentIntentId = typeof session.payment_intent === 'string'
             ? session.payment_intent
-            : session.payment_intent.id;
+            : session.payment_intent?.id ?? null;
 
-          await updatePaymentStatus(paymentIntentId, 'succeeded');
-          console.log('[Stripe Webhook] Payment status updated to succeeded');
+          // Find by session ID and update status (+ real payment intent if available)
+          const updateSet: Record<string, unknown> = { status: 'succeeded', updatedAt: new Date() };
+          if (paymentIntentId) updateSet.stripePaymentIntentId = paymentIntentId;
+
+          await db.update(payments)
+            .set(updateSet)
+            .where(eq(payments.stripeCheckoutSessionId, session.id));
+
+          console.log('[Stripe Webhook] Payment status updated to succeeded for session', session.id);
         }
         break;
       }
