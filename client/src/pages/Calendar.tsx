@@ -10,7 +10,6 @@ import DashboardFooter from '../components/layout/DashboardFooter';
 import NewAppointmentModal from '../components/modals/NewAppointmentModal';
 import AppointmentTypeModal from '../components/modals/AppointmentTypeModal';
 import {
-  appointments as initialAppointments,
   appointmentTypes,
   teamMembers,
   businessInfo,
@@ -304,7 +303,7 @@ export default function CalendarPage() {
   const [showNewApptModal, setShowNewApptModal] = useState(false);
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
-  const [appts, setAppts] = useState(initialAppointments);
+  const [appts, setAppts] = useState<Appointment[]>([]);
   const [copied, setCopied] = useState(false);
   const dragApptId = useRef<string | null>(null);
 
@@ -721,8 +720,10 @@ export default function CalendarPage() {
             {rightTab === 'upcoming' ? (
               <div className="space-y-2">
                 {upcomingAppts.length === 0 ? (
-                  <div className="text-center py-8" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif', fontSize: 13 }}>
-                    No upcoming appointments
+                  <div className="text-center py-8" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                    <div className="text-2xl mb-2">📅</div>
+                    <div className="text-sm font-medium mb-1" style={{ color: '#1E293B' }}>No upcoming appointments</div>
+                    <div className="text-xs" style={{ color: '#94A3B8' }}>Share your booking link so clients can schedule time with you.</div>
                   </div>
                 ) : (
                   upcomingAppts.map(appt => (

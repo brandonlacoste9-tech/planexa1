@@ -8,13 +8,15 @@ import DashboardNav from '../components/layout/DashboardNav';
 import DashboardFooter from '../components/layout/DashboardFooter';
 import NewAppointmentModal from '../components/modals/NewAppointmentModal';
 import {
-  clients,
-  appointments,
   getAppointmentType,
   formatPrice,
   formatTime12h,
   type Client,
+  type Appointment,
 } from '../lib/data';
+
+const clients: Client[] = [];
+const appointments: Appointment[] = [];
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
@@ -161,8 +163,14 @@ export default function ClientsPage() {
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-12 text-center text-sm" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>
-                        No clients found
+                      <td colSpan={7} className="px-4 py-16 text-center" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                        <div className="text-2xl mb-2">👥</div>
+                        <div className="text-sm font-medium mb-1" style={{ color: '#1E293B' }}>
+                          {search ? 'No clients match your search' : 'No clients yet'}
+                        </div>
+                        <div className="text-xs" style={{ color: '#94A3B8' }}>
+                          {search ? 'Try a different name or email.' : 'Clients will appear here once they book an appointment.'}
+                        </div>
                       </td>
                     </tr>
                   ) : (
