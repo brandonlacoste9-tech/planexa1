@@ -72,27 +72,27 @@ export const notificationRouter = router({
         // Update existing
         const updateData: any = {};
         if (input.emailBookingConfirmation !== undefined)
-          updateData.emailBookingConfirmation = input.emailBookingConfirmation ? "true" : "false";
+          updateData.emailBookingConfirmation = input.emailBookingConfirmation;
         if (input.emailPaymentReceipt !== undefined)
-          updateData.emailPaymentReceipt = input.emailPaymentReceipt ? "true" : "false";
+          updateData.emailPaymentReceipt = input.emailPaymentReceipt;
         if (input.emailTrialReminder !== undefined)
-          updateData.emailTrialReminder = input.emailTrialReminder ? "true" : "false";
+          updateData.emailTrialReminder = input.emailTrialReminder;
         if (input.emailAppointmentReminder !== undefined)
-          updateData.emailAppointmentReminder = input.emailAppointmentReminder ? "true" : "false";
+          updateData.emailAppointmentReminder = input.emailAppointmentReminder;
         if (input.smsEnabled !== undefined)
-          updateData.smsEnabled = input.smsEnabled ? "true" : "false";
+          updateData.smsEnabled = input.smsEnabled;
         if (input.smsPhoneNumber !== undefined)
           updateData.smsPhoneNumber = input.smsPhoneNumber;
         if (input.smsAppointmentReminder24h !== undefined)
-          updateData.smsAppointmentReminder24h = input.smsAppointmentReminder24h ? "true" : "false";
+          updateData.smsAppointmentReminder24h = input.smsAppointmentReminder24h;
         if (input.smsAppointmentReminder1h !== undefined)
-          updateData.smsAppointmentReminder1h = input.smsAppointmentReminder1h ? "true" : "false";
+          updateData.smsAppointmentReminder1h = input.smsAppointmentReminder1h;
         if (input.voiceEnabled !== undefined)
-          updateData.voiceEnabled = input.voiceEnabled ? "true" : "false";
+          updateData.voiceEnabled = input.voiceEnabled;
         if (input.voicePhoneNumber !== undefined)
           updateData.voicePhoneNumber = input.voicePhoneNumber;
         if (input.voiceCallReminder !== undefined)
-          updateData.voiceCallReminder = input.voiceCallReminder ? "true" : "false";
+          updateData.voiceCallReminder = input.voiceCallReminder;
         updateData.updatedAt = new Date();
 
         await db
@@ -104,17 +104,17 @@ export const notificationRouter = router({
         await db.insert(notificationPreferences).values([
           {
             userId: ctx.user.id,
-            emailBookingConfirmation: (input.emailBookingConfirmation ?? true) ? "true" : "false",
-            emailPaymentReceipt: (input.emailPaymentReceipt ?? true) ? "true" : "false",
-            emailTrialReminder: (input.emailTrialReminder ?? true) ? "true" : "false",
-            emailAppointmentReminder: (input.emailAppointmentReminder ?? true) ? "true" : "false",
-            smsEnabled: (input.smsEnabled ?? false) ? "true" : "false",
+            emailBookingConfirmation: input.emailBookingConfirmation ?? true,
+            emailPaymentReceipt: input.emailPaymentReceipt ?? true,
+            emailTrialReminder: input.emailTrialReminder ?? true,
+            emailAppointmentReminder: input.emailAppointmentReminder ?? true,
+            smsEnabled: input.smsEnabled ?? false,
             smsPhoneNumber: input.smsPhoneNumber,
-            smsAppointmentReminder24h: (input.smsAppointmentReminder24h ?? true) ? "true" : "false",
-            smsAppointmentReminder1h: (input.smsAppointmentReminder1h ?? true) ? "true" : "false",
-            voiceEnabled: (input.voiceEnabled ?? false) ? "true" : "false",
+            smsAppointmentReminder24h: input.smsAppointmentReminder24h ?? true,
+            smsAppointmentReminder1h: input.smsAppointmentReminder1h ?? true,
+            voiceEnabled: input.voiceEnabled ?? false,
             voicePhoneNumber: input.voicePhoneNumber,
-            voiceCallReminder: (input.voiceCallReminder ?? false) ? "true" : "false",
+            voiceCallReminder: input.voiceCallReminder ?? false,
           },
         ]);
       }

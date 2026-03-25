@@ -1,32 +1,37 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  numeric,
+  pgEnum,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
-export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
-  id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
+export const roleEnum = pgEnum("role", ["user", "admin"]);
+export const subscriptionStatusEnum = pgEnum("subscription_status", ["trial", "active", "canceled", "expired"]);
+export const paymentStatusEnum = pgEnum("payment_status", ["pending", "succeeded", "failed", "canceled"]);
+export const notificationTypeEnum = pgEnum("notification_type", ["email", "sms", "voice"]);
+export const notificationLogStatusEnum = pgEnum("notification_log_status", ["pending", "sent", "failed", "bounced"]);
+export const appointmentStatusEnum = pgEnum("appointment_status", ["scheduled", "completed", "canceled", "no-show"]);
+export const appointmentPaymentStatusEnum = pgEnum("appointment_payment_status", ["pending", "paid", "failed", "refunded"]);
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: roleEnum("role").default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }).unique(),
-  // Trial tracking
   trialStartedAt: timestamp("trialStartedAt"),
   trialEndsAt: timestamp("trialEndsAt"),
-  isTrialActive: mysqlEnum("isTrialActive", ["true", "false"]).default("false").notNull(),
-  subscriptionStatus: mysqlEnum("subscriptionStatus", ["trial", "active", "canceled", "expired"]).default("trial").notNull(),
-  // Notification contact info
+  isTrialActive: boolean("isTrialActive").default(false).notNull(),
+  subscriptionStatus: subscriptionStatusEnum("subscriptionStatus").default("trial").notNull(),
   phoneNumber: varchar("phoneNumber", { length: 20 }),
   bookingSlug: varchar("bookingSlug", { length: 64 }).unique(),
   businessName: text("businessName"),
@@ -34,21 +39,18 @@ export const users = mysqlTable("users", {
   businessTimezone: varchar("businessTimezone", { length: 64 }),
 });
 
-/**
- * Subscriptions table to track user subscription status and billing.
- */
-export const subscriptions = mysqlTable("subscriptions", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: serial("userId").notNull(),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }).unique(),
-  status: mysqlEnum("status", ["trial", "active", "past_due", "canceled", "expired"]).default("trial").notNull(),
+  status: subscriptionStatusEnum("status").default("trial").notNull(),
   trialStartedAt: timestamp("trialStartedAt").defaultNow().notNull(),
   trialEndsAt: timestamp("trialEndsAt").notNull(),
   currentPeriodStart: timestamp("currentPeriodStart"),
   currentPeriodEnd: timestamp("currentPeriodEnd"),
   canceledAt: timestamp("canceledAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type User = typeof users.$inferSelect;
@@ -57,67 +59,54 @@ export type InsertUser = typeof users.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = typeof subscriptions.$inferInsert;
 
-/**
- * Payments table to track Stripe transactions.
- * Stores only essential Stripe identifiers and metadata.
- */
-export const payments = mysqlTable("payments", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  userId: serial("userId").notNull(),
   stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }).notNull().unique(),
   stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }).unique(),
   appointmentTypeId: varchar("appointmentTypeId", { length: 64 }),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 3 }).default("USD").notNull(),
-  status: mysqlEnum("status", ["pending", "succeeded", "failed", "canceled"]).default("pending").notNull(),
+  status: paymentStatusEnum("status").default("pending").notNull(),
   customerEmail: varchar("customerEmail", { length: 320 }),
   customerName: text("customerName"),
   metadata: text("metadata"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = typeof payments.$inferInsert;
 
-/**
- * Notification preferences table to track user notification settings.
- */
-export const notificationPreferences = mysqlTable("notificationPreferences", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().unique(),
-  // Email preferences
-  emailBookingConfirmation: mysqlEnum("emailBookingConfirmation", ["true", "false"]).default("true").notNull(),
-  emailPaymentReceipt: mysqlEnum("emailPaymentReceipt", ["true", "false"]).default("true").notNull(),
-  emailTrialReminder: mysqlEnum("emailTrialReminder", ["true", "false"]).default("true").notNull(),
-  emailAppointmentReminder: mysqlEnum("emailAppointmentReminder", ["true", "false"]).default("true").notNull(),
-  // SMS preferences
-  smsEnabled: mysqlEnum("smsEnabled", ["true", "false"]).default("false").notNull(),
+export const notificationPreferences = pgTable("notificationPreferences", {
+  id: serial("id").primaryKey(),
+  userId: serial("userId").notNull().unique(),
+  emailBookingConfirmation: boolean("emailBookingConfirmation").default(true).notNull(),
+  emailPaymentReceipt: boolean("emailPaymentReceipt").default(true).notNull(),
+  emailTrialReminder: boolean("emailTrialReminder").default(true).notNull(),
+  emailAppointmentReminder: boolean("emailAppointmentReminder").default(true).notNull(),
+  smsEnabled: boolean("smsEnabled").default(false).notNull(),
   smsPhoneNumber: varchar("smsPhoneNumber", { length: 20 }),
-  smsAppointmentReminder24h: mysqlEnum("smsAppointmentReminder24h", ["true", "false"]).default("true").notNull(),
-  smsAppointmentReminder1h: mysqlEnum("smsAppointmentReminder1h", ["true", "false"]).default("true").notNull(),
-  // Voice preferences
-  voiceEnabled: mysqlEnum("voiceEnabled", ["true", "false"]).default("false").notNull(),
+  smsAppointmentReminder24h: boolean("smsAppointmentReminder24h").default(true).notNull(),
+  smsAppointmentReminder1h: boolean("smsAppointmentReminder1h").default(true).notNull(),
+  voiceEnabled: boolean("voiceEnabled").default(false).notNull(),
   voicePhoneNumber: varchar("voicePhoneNumber", { length: 20 }),
-  voiceCallReminder: mysqlEnum("voiceCallReminder", ["true", "false"]).default("false").notNull(),
+  voiceCallReminder: boolean("voiceCallReminder").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
 export type InsertNotificationPreferences = typeof notificationPreferences.$inferInsert;
 
-/**
- * Notification logs table to track sent notifications.
- */
-export const notificationLogs = mysqlTable("notificationLogs", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  type: mysqlEnum("type", ["email", "sms", "voice"]).notNull(),
+export const notificationLogs = pgTable("notificationLogs", {
+  id: serial("id").primaryKey(),
+  userId: serial("userId").notNull(),
+  type: notificationTypeEnum("type").notNull(),
   recipient: varchar("recipient", { length: 320 }).notNull(),
   subject: text("subject"),
   message: text("message"),
-  status: mysqlEnum("status", ["pending", "sent", "failed", "bounced"]).default("pending").notNull(),
+  status: notificationLogStatusEnum("status").default("pending").notNull(),
   externalId: varchar("externalId", { length: 255 }),
   error: text("error"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -127,48 +116,42 @@ export const notificationLogs = mysqlTable("notificationLogs", {
 export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
 
-/**
- * Clients table to track booking clients.
- */
-export const clients = mysqlTable("clients", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
+export const clients = pgTable("clients", {
+  id: serial("id").primaryKey(),
+  userId: serial("userId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 320 }).notNull(),
   phoneNumber: varchar("phoneNumber", { length: 20 }),
   notes: text("notes"),
-  totalAppointments: int("totalAppointments").default(0).notNull(),
-  totalSpent: decimal("totalSpent", { precision: 10, scale: 2 }).default("0").notNull(),
+  totalAppointments: serial("totalAppointments").notNull(),
+  totalSpent: numeric("totalSpent", { precision: 10, scale: 2 }).default("0").notNull(),
   lastAppointmentAt: timestamp("lastAppointmentAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = typeof clients.$inferInsert;
 
-/**
- * Appointments table to track all bookings.
- */
-export const appointments = mysqlTable("appointments", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  clientId: int("clientId").notNull(),
+export const appointments = pgTable("appointments", {
+  id: serial("id").primaryKey(),
+  userId: serial("userId").notNull(),
+  clientId: serial("clientId").notNull(),
   clientName: varchar("clientName", { length: 255 }).notNull(),
   clientEmail: varchar("clientEmail", { length: 320 }).notNull(),
   clientPhone: varchar("clientPhone", { length: 20 }),
   appointmentType: varchar("appointmentType", { length: 255 }).notNull(),
-  duration: int("duration").notNull(), // in minutes
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  status: mysqlEnum("status", ["scheduled", "completed", "canceled", "no-show"]).default("scheduled").notNull(),
+  duration: serial("duration").notNull(),
+  price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+  status: appointmentStatusEnum("status").default("scheduled").notNull(),
   startTime: timestamp("startTime").notNull(),
   endTime: timestamp("endTime").notNull(),
   notes: text("notes"),
-  paymentId: int("paymentId"),
-  paymentStatus: mysqlEnum("paymentStatus", ["pending", "paid", "failed", "refunded"]).default("pending").notNull(),
-  isTrialBooking: mysqlEnum("isTrialBooking", ["true", "false"]).default("false").notNull(),
+  paymentId: serial("paymentId"),
+  paymentStatus: appointmentPaymentStatusEnum("paymentStatus").default("pending").notNull(),
+  isTrialBooking: boolean("isTrialBooking").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type Appointment = typeof appointments.$inferSelect;

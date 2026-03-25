@@ -1,47 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1774157525126,
-      "tag": "0000_fearless_bloodstrike",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1774157630506,
-      "tag": "0001_stale_mac_gargan",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1774159855964,
-      "tag": "0002_equal_sasquatch",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1774162237615,
-      "tag": "0003_lovely_thing",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1774393092527,
-      "tag": "0004_sharp_venom",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1774165000000,
-      "tag": "0005_booking_profile",
+      "version": "7",
+      "when": 1740000000000,
+      "tag": "0000_initial_schema",
       "breakpoints": true
     }
   ]

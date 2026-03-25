@@ -35,7 +35,7 @@ export async function startUserTrial(userId: number): Promise<void> {
     .set({
       trialStartedAt: now,
       trialEndsAt,
-      isTrialActive: "true",
+      isTrialActive: true,
       subscriptionStatus: "trial",
     })
     .where(eq(users.id, userId));
@@ -53,7 +53,7 @@ export async function isTrialActive(userId: number): Promise<boolean> {
   if (!user.length || !user[0].trialEndsAt) return false;
 
   const now = new Date();
-  return user[0].trialEndsAt > now && user[0].isTrialActive === "true";
+  return user[0].trialEndsAt > now && user[0].isTrialActive === true;
 }
 
 /**
@@ -77,7 +77,7 @@ export async function getTrialStatus(userId: number): Promise<{
   }
 
   const now = new Date();
-  const isActive = user[0].trialEndsAt > now && user[0].isTrialActive === "true";
+  const isActive = user[0].trialEndsAt > now && user[0].isTrialActive === true;
   const daysRemaining = Math.ceil(
     (user[0].trialEndsAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
   );
@@ -100,7 +100,7 @@ export async function endUserTrial(userId: number): Promise<void> {
   await db
     .update(users)
     .set({
-      isTrialActive: "false",
+      isTrialActive: false,
       subscriptionStatus: "expired",
     })
     .where(eq(users.id, userId));
@@ -181,7 +181,7 @@ export async function requiresPayment(userId: number): Promise<boolean> {
   if (!user.length) return false;
 
   // If trial is still active, no payment required
-  if (user[0].isTrialActive === "true" && user[0].trialEndsAt) {
+  if (user[0].isTrialActive === true && user[0].trialEndsAt) {
     const now = new Date();
     if (user[0].trialEndsAt > now) return false;
   }
