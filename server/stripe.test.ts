@@ -88,17 +88,6 @@ describe('Stripe Router', () => {
     });
   });
 
-  describe('verifyWebhookSignature', () => {
-    it('should verify valid webhook signatures', async () => {
-      // This would test with a real Stripe webhook signature
-      expect(true).toBe(true);
-    });
-
-    it('should reject invalid signatures', async () => {
-      // Invalid signature should throw an error
-      expect(true).toBe(true);
-    });
-  });
 });
 
 describe('Database Payment Helpers', () => {

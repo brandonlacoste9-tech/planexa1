@@ -1,4 +1,10 @@
 export const ENV = {
+  /** Canonical site URL for sitemap, OG tags, and SEO (no trailing slash). */
+  publicSiteUrl:
+    process.env.PUBLIC_SITE_URL?.trim() ||
+    process.env.SITE_URL?.trim() ||
+    process.env.VITE_PUBLIC_SITE_URL?.trim() ||
+    "",
   appId: process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",

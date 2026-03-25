@@ -1,12 +1,35 @@
 import { trpc } from "@/lib/trpc";
+import { initSeoWebVitals } from "@/lib/seoWebVitals";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
+
+initSeoWebVitals();
+
+const analyticsEndpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT as
+  | string
+  | undefined;
+const analyticsWebsiteId = import.meta.env.VITE_ANALYTICS_WEBSITE_ID as
+  | string
+  | undefined;
+if (
+  typeof analyticsEndpoint === "string" &&
+  analyticsEndpoint.length > 0 &&
+  typeof analyticsWebsiteId === "string" &&
+  analyticsWebsiteId.length > 0
+) {
+  const script = document.createElement("script");
+  script.defer = true;
+  script.src = `${analyticsEndpoint.replace(/\/$/, "")}/umami`;
+  script.dataset.websiteId = analyticsWebsiteId;
+  document.body.appendChild(script);
+}
 
 const queryClient = new QueryClient();
 
@@ -53,9 +76,11 @@ const trpcClient = trpc.createClient({
 });
 
 createRoot(document.getElementById("root")!).render(
-  <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </trpc.Provider>
+  <HelmetProvider>
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </trpc.Provider>
+  </HelmetProvider>
 );

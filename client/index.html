@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Planexa — Scheduling SaaS</title>
     <meta name="description" content="Planexa helps businesses manage bookings, staff availability, and client appointments with ease." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -10,11 +10,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <noscript>
+      <main style="font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem;">
+        <h1>Planexa — Scheduling SaaS</h1>
+        <p>
+          Planexa helps businesses manage bookings, staff availability, and client appointments with ease.
+          Enable JavaScript for the full application.
+        </p>
+        <p><a href="/">Home</a></p>
+      </main>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script
-      defer
-      src="%VITE_ANALYTICS_ENDPOINT%/umami"
-      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
   </body>
 </html>

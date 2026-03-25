@@ -5,14 +5,12 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Check, Clock, DollarSign, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRoute } from 'wouter';
+import { TRIAL_PERIOD_DAYS } from '@shared/const';
+import type { AppointmentType, BookingBusiness } from '@shared/demoCatalog';
+import PageLoader from '@/components/PageLoader';
 import { trpc } from '../lib/trpc';
-import {
-  appointmentTypes,
-  businessInfo,
-  formatDuration,
-  formatPrice,
-  type AppointmentType,
-} from '../lib/data';
+import { formatDuration, formatPrice } from '../lib/data';
 
 type Step = 'service' | 'date' | 'time' | 'details' | 'confirmation';
 
@@ -40,10 +38,12 @@ function getMonthDates(year: number, month: number) {
   return { firstDay, daysInMonth, startOffset };
 }
 
-// Step 1: Service Selection (IMPROVED with clear paid/free indicators)
+// Step 1: Service selection
 function ServiceStep({
+  appointmentTypes,
   onSelect,
 }: {
+  appointmentTypes: AppointmentType[];
   onSelect: (type: AppointmentType) => void;
 }) {
   const activeTypes = appointmentTypes.filter(t => t.is_active);
@@ -418,6 +418,8 @@ function ConfirmationStep({
   onPaymentClick,
   isProcessing,
   trialDaysRemaining,
+  trialPeriodDays,
+  business,
 }: {
   service: AppointmentType;
   date: Date;
@@ -427,11 +429,13 @@ function ConfirmationStep({
   onBookAnother: () => void;
   onPaymentClick: () => void;
   isProcessing: boolean;
+  business: Pick<BookingBusiness, 'name' | 'description' | 'timezone'>;
   trialDaysRemaining?: number;
+  trialPeriodDays?: number;
 }) {
+  const trialLabelDays = trialPeriodDays ?? TRIAL_PERIOD_DAYS;
   return (
     <div className="text-center">
-      {/* Animated checkmark */}
       <div
         className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
         style={{ backgroundColor: '#D8F3DC' }}
@@ -456,7 +460,7 @@ function ConfirmationStep({
               className="font-semibold text-sm"
               style={{ color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}
             >
-              7-Day Free Trial Active
+              {trialLabelDays}-Day Free Trial Active
             </span>
           </div>
           <p className="text-xs" style={{ color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}>
@@ -468,7 +472,6 @@ function ConfirmationStep({
         A confirmation has been sent to your email.
       </p>
 
-      {/* Appointment Summary Card */}
       <div
         className="rounded-xl p-5 text-left mb-5"
         style={{ backgroundColor: '#F0EBE0', border: '1px solid #E8E0D0' }}
@@ -493,7 +496,7 @@ function ConfirmationStep({
           </div>
           <div className="flex items-center gap-2 text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
             <MapPin size={13} style={{ color: '#94A3B8' }} />
-            {businessInfo.name}
+            {business.name}
           </div>
           {service.price_cents > 0 && (
             <div className="flex items-center gap-2 text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
@@ -553,7 +556,7 @@ function ConfirmationStep({
             </button>
           ) : null}
         <a
-          href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(service.name + ' with ' + businessInfo.name)}&dates=${date.toISOString().split('T')[0].replace(/-/g, '')}T${time.replace(':', '')}00/${date.toISOString().split('T')[0].replace(/-/g, '')}T${time.replace(':', '')}00`}
+          href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(service.name + ' with ' + business.name)}&dates=${date.toISOString().split('T')[0].replace(/-/g, '')}T${time.replace(':', '')}00/${date.toISOString().split('T')[0].replace(/-/g, '')}T${time.replace(':', '')}00`}
           target="_blank"
           rel="noopener noreferrer"
           className="block w-full py-2.5 rounded-xl text-sm font-medium transition-colors"
@@ -616,6 +619,14 @@ function SummaryBar({
 }
 
 export default function BookingPage() {
+  const [, routeParams] = useRoute("/book/:slug");
+  const slug = routeParams?.slug ?? "";
+
+  const catalogQuery = trpc.booking.getCatalog.useQuery(
+    { slug },
+    { enabled: slug.length > 0 }
+  );
+
   const [step, setStep] = useState<Step>('service');
   const [selectedService, setSelectedService] = useState<AppointmentType | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -623,18 +634,19 @@ export default function BookingPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', notes: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [trialDaysRemaining, setTrialDaysRemaining] = useState<number | undefined>(undefined);
+  const [trialPeriodDays, setTrialPeriodDays] = useState<number | undefined>(undefined);
 
   const checkoutMutation = trpc.stripe.createCheckoutSession.useMutation();
   const startTrialMutation = trpc.stripe.startTrial.useMutation();
 
-  // Start trial when user reaches confirmation
   const handleStartTrial = async () => {
     try {
-      await startTrialMutation.mutateAsync();
-      setTrialDaysRemaining(7);
-    } catch (error) {
-      console.error('Trial start error:', error);
-      // Continue anyway if trial start fails
+      const data = await startTrialMutation.mutateAsync();
+      setTrialDaysRemaining(data.daysRemaining);
+      setTrialPeriodDays(data.trialPeriodDays);
+    } catch {
+      setTrialDaysRemaining(undefined);
+      setTrialPeriodDays(undefined);
     }
   };
 
@@ -644,6 +656,8 @@ export default function BookingPage() {
     setSelectedDate(null);
     setSelectedTime(null);
     setForm({ name: '', email: '', phone: '', notes: '' });
+    setTrialDaysRemaining(undefined);
+    setTrialPeriodDays(undefined);
   };
 
   const handleConfirm = async () => {
@@ -651,7 +665,6 @@ export default function BookingPage() {
       toast.error('Please fill in your name and email.');
       return;
     }
-    // Start trial when reaching confirmation
     await handleStartTrial();
     setStep('confirmation');
   };
@@ -688,6 +701,52 @@ export default function BookingPage() {
   const stepOrder: Step[] = ['service', 'date', 'time', 'details', 'confirmation'];
   const currentStepIdx = stepOrder.indexOf(step);
 
+  if (!slug.trim()) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{ backgroundColor: "#FAF7F2" }}
+      >
+        <p className="text-sm text-center" style={{ color: "#64748B", fontFamily: "DM Sans, sans-serif" }}>
+          Missing booking link. Open a valid <code className="text-xs">/book/your-business</code> URL.
+        </p>
+      </div>
+    );
+  }
+
+  if (catalogQuery.isLoading) {
+    return <PageLoader />;
+  }
+
+  if (catalogQuery.error) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{ backgroundColor: "#FAF7F2" }}
+      >
+        <p className="text-sm text-center" style={{ color: "#64748B", fontFamily: "DM Sans, sans-serif" }}>
+          Could not load this booking page. Try again later.
+        </p>
+      </div>
+    );
+  }
+
+  const catalog = catalogQuery.data;
+  if (!catalog?.found) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{ backgroundColor: "#FAF7F2" }}
+      >
+        <p className="text-sm text-center max-w-sm" style={{ color: "#64748B", fontFamily: "DM Sans, sans-serif" }}>
+          No public booking page was found for this link. Check the URL or contact the business.
+        </p>
+      </div>
+    );
+  }
+
+  const { business, appointmentTypes } = catalog;
+
   return (
     <div
       className="min-h-screen py-10 px-4"
@@ -707,14 +766,14 @@ export default function BookingPage() {
             className="text-3xl mb-2"
             style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, color: '#1E293B', fontStyle: 'italic' }}
           >
-            {businessInfo.name}
+            {business.name}
           </h1>
           <p className="text-sm" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-            {businessInfo.description}
+            {business.description}
           </p>
           <div className="flex items-center justify-center gap-1 mt-2 text-xs" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>
             <MapPin size={11} />
-            {businessInfo.timezone}
+            {business.timezone}
           </div>
         </div>
 
@@ -737,7 +796,15 @@ export default function BookingPage() {
           className="rounded-2xl p-6 mb-6"
           style={{ backgroundColor: 'white', border: '1px solid #E8E0D0' }}
         >
-          {step === 'service' && <ServiceStep onSelect={(type) => { setSelectedService(type); setStep('date'); }} />}
+          {step === 'service' && (
+            <ServiceStep
+              appointmentTypes={appointmentTypes}
+              onSelect={(type) => {
+                setSelectedService(type);
+                setStep('date');
+              }}
+            />
+          )}
 
           {step === 'date' && selectedService && (
             <>
@@ -770,7 +837,9 @@ export default function BookingPage() {
               onBookAnother={handleReset}
               onPaymentClick={handlePaymentClick}
               isProcessing={isProcessing}
+              business={business}
               trialDaysRemaining={trialDaysRemaining}
+              trialPeriodDays={trialPeriodDays}
             />
           )}
         </div>

@@ -36,6 +36,13 @@
       "when": 1774393092527,
       "tag": "0004_sharp_venom",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1774165000000,
+      "tag": "0005_booking_profile",
+      "breakpoints": true
     }
   ]
 }

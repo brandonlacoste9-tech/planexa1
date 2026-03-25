@@ -1,3 +1,6 @@
+/** Length of the free trial window (days). Server trial logic uses the same value. */
+export const TRIAL_PERIOD_DAYS = 7;
+
 export const COOKIE_NAME = "app_session_id";
 export const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
 export const AXIOS_TIMEOUT_MS = 30_000;

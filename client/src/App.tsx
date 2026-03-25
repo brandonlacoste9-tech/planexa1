@@ -3,37 +3,47 @@
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
+import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
+import PageLoader from "./components/PageLoader";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
-import CalendarPage from "./pages/Calendar";
-import ClientsPage from "./pages/Clients";
-import AnalyticsPage from "./pages/Analytics";
-import SettingsPage from "./pages/Settings";
-import BookingPage from "./pages/Booking";
-import PaymentsPage from "./pages/Payments";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentCanceled from "./pages/PaymentCanceled";
-import NotificationSettings from "./pages/NotificationSettings";
+import { RouteSeo } from "./components/seo/RouteSeo";
+
+const Home = lazy(() => import("./pages/Home"));
+const CalendarPage = lazy(() => import("./pages/Calendar"));
+const ClientsPage = lazy(() => import("./pages/Clients"));
+const AnalyticsPage = lazy(() => import("./pages/Analytics"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
+const BookingPage = lazy(() => import("./pages/Booking"));
+const PaymentsPage = lazy(() => import("./pages/Payments"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
+const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/calendar" component={CalendarPage} />
-      <Route path="/clients" component={ClientsPage} />
-      <Route path="/analytics" component={AnalyticsPage} />
-      <Route path="/settings" component={SettingsPage} />
-      <Route path="/payments" component={PaymentsPage} />
-      <Route path="/payment-success" component={PaymentSuccess} />
-      <Route path="/payment-canceled" component={PaymentCanceled} />
-      <Route path="/notification-settings" component={NotificationSettings} />
-      <Route path="/book/:slug" component={BookingPage} />
-      <Route path="/404" component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      <RouteSeo />
+      <Suspense fallback={<PageLoader />}>
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/calendar" component={CalendarPage} />
+          <Route path="/clients" component={ClientsPage} />
+          <Route path="/analytics" component={AnalyticsPage} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route path="/payments" component={PaymentsPage} />
+          <Route path="/payment-success" component={PaymentSuccess} />
+          <Route path="/payment-canceled" component={PaymentCanceled} />
+          <Route path="/notification-settings" component={NotificationSettings} />
+          <Route path="/book/:slug" component={BookingPage} />
+          <Route path="/404" component={NotFound} />
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
+    </>
   );
 }
 

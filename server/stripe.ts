@@ -3,8 +3,8 @@
  * Handles checkout session creation and webhook events
  */
 
-import Stripe from 'stripe';
-import { protectedProcedure, publicProcedure, router } from './_core/trpc';
+import { protectedProcedure, router } from './_core/trpc';
+import { stripe } from './stripeClient';
 import { z } from 'zod';
 import {
   createPayment,
@@ -13,9 +13,8 @@ import {
   getPaymentByStripePaymentIntentId,
 } from './db';
 import { TRPCError } from '@trpc/server';
-import { startUserTrial, getTrialStatus as getTrialStatusHelper, upgradeToPaidSubscription } from './trial';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+import { TRIAL_PERIOD_DAYS } from '@shared/const';
+import { startUserTrial, getTrialStatus as getTrialStatusHelper } from './trial';
 
 export const stripeRouter = router({
   /**
@@ -33,9 +32,16 @@ export const stripeRouter = router({
 
       await startUserTrial(user.id);
 
+      const status = await getTrialStatusHelper(user.id);
+
       return {
         success: true,
         message: 'Trial started successfully',
+        trialPeriodDays: TRIAL_PERIOD_DAYS,
+        daysRemaining: status.daysRemaining,
+        endsAt: status.endsAt,
+        startedAt: status.startedAt,
+        isActive: status.isActive,
       };
     } catch (error) {
       console.error('[Trial] Error starting trial:', error);
@@ -186,35 +192,4 @@ export const stripeRouter = router({
       });
     }
   }),
-
-  /**
-   * Verify webhook signature (for testing)
-   */
-  verifyWebhookSignature: publicProcedure
-    .input(
-      z.object({
-        signature: z.string(),
-        payload: z.string(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      try {
-        const event = stripe.webhooks.constructEvent(
-          input.payload,
-          input.signature,
-          process.env.STRIPE_WEBHOOK_SECRET || ''
-        );
-
-        return {
-          verified: true,
-          eventType: event.type,
-        };
-      } catch (error) {
-        console.error('[Stripe] Webhook verification failed:', error);
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Webhook signature verification failed',
-        });
-      }
-    }),
 });

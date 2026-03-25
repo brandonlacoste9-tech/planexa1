@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, payments, InsertPayment } from "../drizzle/schema";
+import { InsertUser, users, payments, InsertPayment, type User } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -87,6 +87,52 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserByBookingSlug(normalizedSlug: string): Promise<User | undefined> {
+  const db = await getDb();
+  if (!db) {
+    return undefined;
+  }
+  const n = normalizedSlug.trim().toLowerCase();
+  if (!n) {
+    return undefined;
+  }
+
+  const result = await db
+    .select()
+    .from(users)
+    .where(and(isNotNull(users.bookingSlug), sql`LOWER(${users.bookingSlug}) = ${n}`))
+    .limit(1);
+
+  return result[0];
+}
+
+export async function updateUserBusinessProfile(
+  userId: number,
+  fields: {
+    bookingSlug: string | null;
+    businessName: string | null;
+    businessDescription: string | null;
+    businessTimezone: string | null;
+  }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update user business profile: database not available");
+    return;
+  }
+
+  await db
+    .update(users)
+    .set({
+      bookingSlug: fields.bookingSlug,
+      businessName: fields.businessName,
+      businessDescription: fields.businessDescription,
+      businessTimezone: fields.businessTimezone,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
 }
 
 /**

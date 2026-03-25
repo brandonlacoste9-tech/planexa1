@@ -1,12 +1,21 @@
 // Planexa — Settings Page
 // Design: Sectioned settings with sidebar nav, DM Sans forms
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Building2, Clock, Users, Bell, Link2, CreditCard, ChevronRight } from 'lucide-react';
+import { useAuth } from '@/_core/hooks/useAuth';
 import DashboardNav from '../components/layout/DashboardNav';
 import DashboardFooter from '../components/layout/DashboardFooter';
+import { trpc } from '../lib/trpc';
 import { businessInfo, teamMembers } from '../lib/data';
+
+type ProfileDraft = {
+  name: string;
+  slug: string;
+  description: string;
+  timezone: string;
+};
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const TIMEZONES = [
@@ -38,13 +47,60 @@ const integrationList = [
 ];
 
 export default function SettingsPage() {
+  const { user, isAuthenticated } = useAuth();
+  const utils = trpc.useUtils();
   const [activeSection, setActiveSection] = useState('profile');
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<ProfileDraft>({
     name: businessInfo.name,
     slug: businessInfo.slug,
     description: businessInfo.description,
     timezone: businessInfo.timezone,
   });
+  const [profileHydrated, setProfileHydrated] = useState(false);
+
+  const profileQuery = trpc.settings.getBusinessProfile.useQuery(undefined, {
+    enabled: isAuthenticated,
+    retry: false,
+  });
+  const updateMutation = trpc.settings.updateBusinessProfile.useMutation({
+    onSuccess: async () => {
+      toast.success('Business profile saved!');
+      setProfileHydrated(false);
+      await utils.settings.getBusinessProfile.invalidate();
+      await utils.auth.me.invalidate();
+    },
+    onError: err => {
+      toast.error(err instanceof Error ? err.message : 'Could not save profile.');
+    },
+  });
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setProfileHydrated(false);
+      setProfile({
+        name: businessInfo.name,
+        slug: businessInfo.slug,
+        description: businessInfo.description,
+        timezone: businessInfo.timezone,
+      });
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    setProfileHydrated(false);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !profileQuery.isSuccess || !profileQuery.data) return;
+    if (profileHydrated) return;
+    setProfile({
+      name: profileQuery.data.name,
+      slug: profileQuery.data.slug,
+      description: profileQuery.data.description,
+      timezone: profileQuery.data.timezone,
+    });
+    setProfileHydrated(true);
+  }, [isAuthenticated, profileHydrated, profileQuery.data, profileQuery.isSuccess]);
   const [workingHours, setWorkingHours] = useState(
     DAYS.map((day, i) => ({
       day,
@@ -59,7 +115,11 @@ export default function SettingsPage() {
   const [reminderHours, setReminderHours] = useState(24);
 
   const handleSaveProfile = () => {
-    toast.success('Business profile saved!');
+    if (!isAuthenticated) {
+      toast.error('Sign in to save your business profile.');
+      return;
+    }
+    updateMutation.mutate(profile);
   };
 
   const handleToggleIntegration = (id: string, name: string) => {
@@ -187,13 +247,22 @@ export default function SettingsPage() {
                   </div>
                   <div className="pt-2" style={{ borderTop: '1px solid #E8E0D0' }}>
                     <button
+                      type="button"
                       onClick={handleSaveProfile}
-                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      disabled={
+                        updateMutation.isPending ||
+                        (isAuthenticated && profileQuery.isLoading)
+                      }
+                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
                       style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+                      onMouseEnter={e => {
+                        if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#40916C';
+                      }}
+                      onMouseLeave={e => {
+                        if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#2D6A4F';
+                      }}
                     >
-                      Save Changes
+                      {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
                     </button>
                   </div>
                 </div>

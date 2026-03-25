@@ -3,11 +3,10 @@
  * Handles 7-day free trial logic for new users
  */
 
+import { TRIAL_PERIOD_DAYS } from "@shared/const";
 import { getDb } from "./db";
 import { subscriptions, users } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
-
-const TRIAL_DAYS = 7;
 
 /**
  * Start a new trial for a user
@@ -18,7 +17,9 @@ export async function startUserTrial(userId: number): Promise<void> {
   if (!db) throw new Error("Database not available");
 
   const now = new Date();
-  const trialEndsAt = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+  const trialEndsAt = new Date(
+    now.getTime() + TRIAL_PERIOD_DAYS * 24 * 60 * 60 * 1000
+  );
 
   // Create subscription record
   await db.insert(subscriptions).values({

@@ -2,6 +2,8 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import { bookingRouter } from "./bookingRouter";
+import { settingsRouter } from "./settingsRouter";
 import { stripeRouter } from "./stripe";
 import { notificationRouter } from "./notifications";
 
@@ -19,10 +21,10 @@ export const appRouter = router({
     }),
   }),
 
+  booking: bookingRouter,
+  settings: settingsRouter,
   stripe: stripeRouter,
   notifications: notificationRouter,
-
-  // TODO: add additional feature routers here
 });
 
 export type AppRouter = typeof appRouter;

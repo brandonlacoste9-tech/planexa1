@@ -1,4 +1,4 @@
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { getDb } from "./db";
 import { notificationPreferences } from "../drizzle/schema";
@@ -125,7 +125,7 @@ export const notificationRouter = router({
   /**
    * Send booking confirmation notification
    */
-  sendBookingConfirmation: publicProcedure
+  sendBookingConfirmation: protectedProcedure
     .input(
       z.object({
         clientEmail: z.string().email(),
@@ -164,7 +164,7 @@ export const notificationRouter = router({
   /**
    * Send payment receipt notification
    */
-  sendPaymentReceipt: publicProcedure
+  sendPaymentReceipt: protectedProcedure
     .input(
       z.object({
         clientEmail: z.string().email(),
@@ -189,7 +189,7 @@ export const notificationRouter = router({
   /**
    * Send trial expiration reminder
    */
-  sendTrialReminder: publicProcedure
+  sendTrialReminder: protectedProcedure
     .input(
       z.object({
         clientEmail: z.string().email(),
@@ -240,7 +240,7 @@ export const notificationRouter = router({
   /**
    * Send appointment reminder
    */
-  sendAppointmentReminder: publicProcedure
+  sendAppointmentReminder: protectedProcedure
     .input(
       z.object({
         clientEmail: z.string().email(),

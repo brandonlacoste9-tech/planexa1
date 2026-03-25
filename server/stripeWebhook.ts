@@ -6,8 +6,7 @@
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import { updatePaymentStatus } from './db';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+import { stripe } from './stripeClient';
 
 /**
  * Handle Stripe webhook events

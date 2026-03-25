@@ -28,6 +28,10 @@ export const users = mysqlTable("users", {
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["trial", "active", "canceled", "expired"]).default("trial").notNull(),
   // Notification contact info
   phoneNumber: varchar("phoneNumber", { length: 20 }),
+  bookingSlug: varchar("bookingSlug", { length: 64 }).unique(),
+  businessName: text("businessName"),
+  businessDescription: text("businessDescription"),
+  businessTimezone: varchar("businessTimezone", { length: 64 }),
 });
 
 /**
