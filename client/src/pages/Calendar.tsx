@@ -4,6 +4,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/_core/hooks/useAuth';
+import { trpc } from '../lib/trpc';
 import { ChevronLeft, ChevronRight, Plus, ExternalLink, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import DashboardNav from '../components/layout/DashboardNav';
@@ -373,10 +374,17 @@ export default function CalendarPage() {
     dragApptId.current = null;
   }, []);
 
-  const bookingLink = `planexa.co/book/${businessInfo.slug}`;
+  const profileQuery = trpc.settings.getBusinessProfile.useQuery(undefined, {
+    enabled: !!user,
+    retry: false,
+  });
+  const businessName = profileQuery.data?.name ?? businessInfo.name;
+  const businessDescription = profileQuery.data?.description ?? businessInfo.description;
+  const bookingSlug = profileQuery.data?.slug ?? businessInfo.slug;
+  const bookingLink = `planexa.co/book/${bookingSlug}`;
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(bookingLink);
+    navigator.clipboard.writeText(`${window.location.origin}/book/${bookingSlug}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     toast.success('Booking link copied!');
@@ -730,10 +738,10 @@ export default function CalendarPage() {
                     className="text-base font-medium mb-1"
                     style={{ fontFamily: 'Fraunces, serif', color: 'white', fontStyle: 'italic', fontWeight: 300 }}
                   >
-                    {businessInfo.name}
+                    {businessName}
                   </div>
                   <div className="text-xs mb-3" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                    {businessInfo.description}
+                    {businessDescription}
                   </div>
                   <div className="space-y-2">
                     {appointmentTypes.filter(t => t.is_active).map(type => (
@@ -757,7 +765,7 @@ export default function CalendarPage() {
                   <button
                     className="w-full mt-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
                     style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-                    onClick={() => toast.info('Opening booking page...')}
+                    onClick={() => window.open(`/book/${bookingSlug}`, '_blank')}
                   >
                     <ExternalLink size={11} />
                     View Live Booking Page →

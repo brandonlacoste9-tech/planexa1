@@ -8,7 +8,7 @@ import { useAuth } from '@/_core/hooks/useAuth';
 import DashboardNav from '../components/layout/DashboardNav';
 import DashboardFooter from '../components/layout/DashboardFooter';
 import { trpc } from '../lib/trpc';
-import { businessInfo, teamMembers } from '../lib/data';
+import { businessInfo } from '../lib/data';
 
 type ProfileDraft = {
   name: string;
@@ -39,9 +39,9 @@ const sections = [
 ];
 
 const integrationList = [
-  { id: 'google', name: 'Google Calendar', description: 'Sync appointments with Google Calendar', connected: true, icon: '📅' },
+  { id: 'google', name: 'Google Calendar', description: 'Sync appointments with Google Calendar', connected: false, icon: '📅' },
   { id: 'outlook', name: 'Microsoft Outlook', description: 'Sync with Outlook calendar and contacts', connected: false, icon: '📧' },
-  { id: 'zoom', name: 'Zoom', description: 'Auto-generate Zoom links for virtual appointments', connected: true, icon: '🎥' },
+  { id: 'zoom', name: 'Zoom', description: 'Auto-generate Zoom links for virtual appointments', connected: false, icon: '🎥' },
   { id: 'whatsapp', name: 'WhatsApp Business', description: 'Send reminders via WhatsApp', connected: false, icon: '💬' },
   { id: 'calendly', name: 'Calendly', description: 'Import existing Calendly bookings', connected: false, icon: '🗓️' },
 ];
@@ -144,12 +144,8 @@ export default function SettingsPage() {
     updateMutation.mutate(profile);
   };
 
-  const handleToggleIntegration = (id: string, name: string) => {
-    setIntegrations(prev => {
-      const newVal = !prev[id];
-      toast.success(newVal ? `${name} connected!` : `${name} disconnected`);
-      return { ...prev, [id]: newVal };
-    });
+  const handleToggleIntegration = (_id: string, name: string) => {
+    toast.info(`${name} integration coming soon`);
   };
 
   return (
@@ -384,37 +380,22 @@ export default function SettingsPage() {
                   Manage your team and their roles.
                 </p>
                 <div className="planexa-card p-5 space-y-3">
-                  {teamMembers.map(member => (
-                    <div
-                      key={member.id}
-                      className="flex items-center gap-3 py-2"
-                      style={{ borderBottom: '1px solid #E8E0D0' }}
-                    >
+                  {user && (
+                    <div className="flex items-center gap-3 py-2" style={{ borderBottom: '1px solid #E8E0D0' }}>
                       <div
                         className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0"
-                        style={{ backgroundColor: member.color_hex + '25', color: member.color_hex, fontFamily: 'DM Sans, sans-serif' }}
+                        style={{ backgroundColor: '#2D6A4F25', color: '#2D6A4F', fontFamily: 'DM Sans, sans-serif' }}
                       >
-                        {member.avatar_initials}
+                        {(user.name ?? user.email ?? 'U').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                       </div>
                       <div className="flex-1">
                         <div className="text-sm font-medium" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
-                          {member.name}
+                          {user.name ?? user.email ?? 'You'}
                         </div>
-                        <div className="text-xs capitalize" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
-                          {member.role}
-                        </div>
+                        <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>owner</div>
                       </div>
-                      <button
-                        onClick={() => toast.info('Feature coming soon')}
-                        className="text-xs px-2.5 py-1 rounded-md transition-colors"
-                        style={{ border: '1px solid #E8E0D0', color: '#475569', fontFamily: 'DM Sans, sans-serif', backgroundColor: 'transparent' }}
-                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0EBE0')}
-                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-                      >
-                        Edit
-                      </button>
                     </div>
-                  ))}
+                  )}
                   <button
                     onClick={() => toast.info('Feature coming soon')}
                     className="w-full py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
@@ -446,55 +427,35 @@ export default function SettingsPage() {
                   Configure email reminders and alerts.
                 </p>
                 <div className="planexa-card p-5 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
-                      Send reminder email
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="number"
-                        value={reminderHours}
-                        onChange={e => setReminderHours(Number(e.target.value))}
-                        min={1}
-                        max={72}
-                        className="planexa-input"
-                        style={{ width: 80 }}
-                      />
-                      <span className="text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
-                        hours before appointment
-                      </span>
+                  <div className="rounded-xl p-4 flex items-start gap-3" style={{ backgroundColor: '#F0EBE0', border: '1px solid #E8E0D0' }}>
+                    <span style={{ fontSize: 18 }}>🔔</span>
+                    <div>
+                      <div className="text-sm font-medium mb-1" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>
+                        Email notifications coming soon
+                      </div>
+                      <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
+                        Booking confirmations, reminders, and cancellation alerts will be configurable here. In the meantime, clients receive a confirmation page after booking.
+                      </div>
                     </div>
                   </div>
                   {[
                     { label: 'New booking confirmation', desc: 'Email client when appointment is booked' },
+                    { label: 'Appointment reminder', desc: '24 hours before the appointment' },
                     { label: 'Cancellation notification', desc: 'Notify client when appointment is cancelled' },
-                    { label: 'Internal team alerts', desc: 'Notify team members of new bookings' },
                   ].map(({ label, desc }) => (
                     <div key={label} className="flex items-start justify-between gap-3 py-2" style={{ borderTop: '1px solid #E8E0D0' }}>
                       <div>
-                        <div className="text-sm font-medium" style={{ color: '#1E293B', fontFamily: 'DM Sans, sans-serif' }}>{label}</div>
-                        <div className="text-xs" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>{desc}</div>
+                        <div className="text-sm font-medium" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>{label}</div>
+                        <div className="text-xs" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>{desc}</div>
                       </div>
-                      <button
-                        className="relative w-9 h-5 rounded-full transition-colors shrink-0"
-                        style={{ backgroundColor: '#2D6A4F' }}
-                        onClick={() => toast.info('Feature coming soon')}
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full shrink-0"
+                        style={{ backgroundColor: '#F1F5F9', color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}
                       >
-                        <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-white rounded-full shadow" />
-                      </button>
+                        Soon
+                      </span>
                     </div>
                   ))}
-                  <div className="pt-2" style={{ borderTop: '1px solid #E8E0D0' }}>
-                    <button
-                      onClick={() => toast.success('Notification settings saved!')}
-                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                      style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
-                    >
-                      Save Settings
-                    </button>
-                  </div>
                 </div>
               </div>
             )}
@@ -568,18 +529,19 @@ export default function SettingsPage() {
                     <div className="text-xs font-medium mb-1" style={{ color: '#52B788', fontFamily: 'DM Sans, sans-serif' }}>
                       Current Plan
                     </div>
-                    <div
-                      className="text-2xl mb-1"
-                      style={{ fontFamily: 'Fraunces, serif', color: 'white', fontWeight: 300 }}
-                    >
-                      Professional
+                    <div className="text-2xl mb-1" style={{ fontFamily: 'Fraunces, serif', color: 'white', fontWeight: 300 }}>
+                      {user?.subscriptionStatus === 'active' ? 'Professional' : 'Free Trial'}
                     </div>
                     <div className="text-sm" style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}>
-                      $49/month · Renews March 22, 2027
+                      {user?.subscriptionStatus === 'active'
+                        ? 'Active subscription'
+                        : user?.trialEndsAt
+                          ? `Trial ends ${new Date(user.trialEndsAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+                          : 'No active subscription'}
                     </div>
                   </div>
                   <div className="space-y-2 mb-4">
-                    {['Unlimited appointments', 'Up to 5 team members', 'Custom booking page', 'Email reminders', 'Analytics dashboard'].map(f => (
+                    {['Booking page', 'Appointment scheduling', 'Client management', 'Analytics dashboard'].map(f => (
                       <div key={f} className="flex items-center gap-2 text-sm" style={{ color: '#475569', fontFamily: 'DM Sans, sans-serif' }}>
                         <span style={{ color: '#2D6A4F' }}>✓</span>
                         {f}

@@ -1,38 +1,18 @@
-// Planexa — DashboardFooter
-// Design: Slate-dark (#1E293B) background, integration pills, weekly stats
-
-import { useState } from 'react';
 import { toast } from 'sonner';
 import { Check } from 'lucide-react';
+import { useState } from 'react';
 
 const integrations = [
-  { id: 'google', label: 'Google Cal', connected: true },
-  { id: 'outlook', label: 'Outlook', connected: false },
-  { id: 'zoom', label: 'Zoom', connected: true },
-  { id: 'whatsapp', label: 'WhatsApp', connected: false },
-  { id: 'calendly', label: 'Calendly', connected: false },
-];
-
-const stats = [
-  { label: 'this week', value: '12' },
-  { label: 'show rate', value: '91%' },
-  { label: 'revenue', value: '$2,840' },
+  { id: 'google', label: 'Google Cal' },
+  { id: 'outlook', label: 'Outlook' },
+  { id: 'zoom', label: 'Zoom' },
+  { id: 'whatsapp', label: 'WhatsApp' },
 ];
 
 export default function DashboardFooter() {
-  const [connected, setConnected] = useState<Record<string, boolean>>(
-    Object.fromEntries(integrations.map(i => [i.id, i.connected]))
+  const [connected] = useState<Record<string, boolean>>(
+    Object.fromEntries(integrations.map(i => [i.id, false]))
   );
-
-  const handleConnect = (id: string, label: string) => {
-    if (connected[id]) {
-      toast.success(`${label} disconnected`);
-      setConnected(prev => ({ ...prev, [id]: false }));
-    } else {
-      toast.success(`${label} connected!`, { description: 'Integration is now active.' });
-      setConnected(prev => ({ ...prev, [id]: true }));
-    }
-  };
 
   return (
     <footer
@@ -41,10 +21,7 @@ export default function DashboardFooter() {
     >
       {/* Integrations */}
       <div className="flex items-center gap-2 flex-1 overflow-x-auto">
-        <span
-          className="text-xs font-medium shrink-0"
-          style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}
-        >
+        <span className="text-xs font-medium shrink-0" style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}>
           Integrations
         </span>
         <div className="flex items-center gap-1.5">
@@ -53,7 +30,7 @@ export default function DashboardFooter() {
             return (
               <button
                 key={id}
-                onClick={() => handleConnect(id, label)}
+                onClick={() => toast.info(`${label} integration coming soon`)}
                 className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all"
                 style={{
                   fontFamily: 'DM Sans, sans-serif',
@@ -63,41 +40,14 @@ export default function DashboardFooter() {
                 }}
               >
                 {isConnected ? (
-                  <>
-                    <span className="pulse-dot" style={{ width: 5, height: 5 }} />
-                    <Check size={9} />
-                    {label}
-                  </>
+                  <><span className="pulse-dot" style={{ width: 5, height: 5 }} /><Check size={9} />{label}</>
                 ) : (
-                  <>
-                    {label}
-                    <span className="text-xs opacity-60">+</span>
-                  </>
+                  <>{label}<span className="text-xs opacity-40">+</span></>
                 )}
               </button>
             );
           })}
         </div>
-      </div>
-
-      {/* Stats */}
-      <div className="hidden md:flex items-center gap-4 shrink-0">
-        {stats.map(({ label, value }) => (
-          <div key={label} className="flex items-baseline gap-1">
-            <span
-              style={{ fontFamily: 'Fraunces, serif', color: '#52B788', fontWeight: 400 }}
-              className="text-sm"
-            >
-              {value}
-            </span>
-            <span
-              style={{ color: '#64748B', fontFamily: 'DM Sans, sans-serif' }}
-              className="text-xs"
-            >
-              {label}
-            </span>
-          </div>
-        ))}
       </div>
     </footer>
   );
