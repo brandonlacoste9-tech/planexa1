@@ -101,14 +101,36 @@ export default function SettingsPage() {
     });
     setProfileHydrated(true);
   }, [isAuthenticated, profileHydrated, profileQuery.data, profileQuery.isSuccess]);
+  const availabilityQuery = trpc.settings.getAvailability.useQuery(undefined, {
+    enabled: isAuthenticated,
+    retry: false,
+  });
+  const updateAvailabilityMutation = trpc.settings.updateAvailability.useMutation({
+    onSuccess: () => toast.success('Working hours saved!'),
+    onError: () => toast.error('Could not save working hours.'),
+  });
+
+  // Map DAYS (Mon-first) to dayOfWeek (0=Sun). Index i → dayOfWeek = (i+1)%7
   const [workingHours, setWorkingHours] = useState(
     DAYS.map((day, i) => ({
       day,
+      dayOfWeek: (i + 1) % 7,
       enabled: i < 5,
       start: '09:00',
-      end: '18:00',
+      end: '17:00',
     }))
   );
+  const [hoursHydrated, setHoursHydrated] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated || !availabilityQuery.isSuccess || !availabilityQuery.data || hoursHydrated) return;
+    const data = availabilityQuery.data;
+    setWorkingHours(prev => prev.map(wh => {
+      const row = data.find(r => r.dayOfWeek === wh.dayOfWeek);
+      return row ? { ...wh, enabled: row.isEnabled, start: row.startTime, end: row.endTime } : wh;
+    }));
+    setHoursHydrated(true);
+  }, [isAuthenticated, availabilityQuery.isSuccess, availabilityQuery.data, hoursHydrated]);
   const [integrations, setIntegrations] = useState<Record<string, boolean>>(
     Object.fromEntries(integrationList.map(i => [i.id, i.connected]))
   );
@@ -325,13 +347,24 @@ export default function SettingsPage() {
                   ))}
                   <div className="pt-2" style={{ borderTop: '1px solid #E8E0D0' }}>
                     <button
-                      onClick={() => toast.success('Working hours saved!')}
-                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      onClick={() => {
+                        if (!isAuthenticated) { toast.error('Sign in to save your hours.'); return; }
+                        updateAvailabilityMutation.mutate({
+                          schedule: workingHours.map(wh => ({
+                            dayOfWeek: wh.dayOfWeek,
+                            startTime: wh.start,
+                            endTime: wh.end,
+                            isEnabled: wh.enabled,
+                          })),
+                        });
+                      }}
+                      disabled={updateAvailabilityMutation.isPending}
+                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
                       style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
-                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
+                      onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#40916C'; }}
+                      onMouseLeave={e => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#2D6A4F'; }}
                     >
-                      Save Hours
+                      {updateAvailabilityMutation.isPending ? 'Saving…' : 'Save Hours'}
                     </button>
                   </div>
                 </div>

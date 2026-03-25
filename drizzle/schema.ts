@@ -1,11 +1,13 @@
 import {
   boolean,
+  integer,
   numeric,
   pgEnum,
   pgTable,
   serial,
   text,
   timestamp,
+  unique,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -41,7 +43,7 @@ export const users = pgTable("users", {
 
 export const subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
-  userId: serial("userId").notNull(),
+  userId: integer("userId").notNull(),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }).unique(),
   status: subscriptionStatusEnum("status").default("trial").notNull(),
   trialStartedAt: timestamp("trialStartedAt").defaultNow().notNull(),
@@ -55,13 +57,12 @@ export const subscriptions = pgTable("subscriptions", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = typeof subscriptions.$inferInsert;
 
 export const payments = pgTable("payments", {
   id: serial("id").primaryKey(),
-  userId: serial("userId").notNull(),
+  userId: integer("userId").notNull(),
   stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }).notNull().unique(),
   stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }).unique(),
   appointmentTypeId: varchar("appointmentTypeId", { length: 64 }),
@@ -80,7 +81,7 @@ export type InsertPayment = typeof payments.$inferInsert;
 
 export const notificationPreferences = pgTable("notificationPreferences", {
   id: serial("id").primaryKey(),
-  userId: serial("userId").notNull().unique(),
+  userId: integer("userId").notNull().unique(),
   emailBookingConfirmation: boolean("emailBookingConfirmation").default(true).notNull(),
   emailPaymentReceipt: boolean("emailPaymentReceipt").default(true).notNull(),
   emailTrialReminder: boolean("emailTrialReminder").default(true).notNull(),
@@ -101,7 +102,7 @@ export type InsertNotificationPreferences = typeof notificationPreferences.$infe
 
 export const notificationLogs = pgTable("notificationLogs", {
   id: serial("id").primaryKey(),
-  userId: serial("userId").notNull(),
+  userId: integer("userId").notNull(),
   type: notificationTypeEnum("type").notNull(),
   recipient: varchar("recipient", { length: 320 }).notNull(),
   subject: text("subject"),
@@ -118,12 +119,12 @@ export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
 
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
-  userId: serial("userId").notNull(),
+  userId: integer("userId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 320 }).notNull(),
   phoneNumber: varchar("phoneNumber", { length: 20 }),
   notes: text("notes"),
-  totalAppointments: serial("totalAppointments").notNull(),
+  totalAppointments: integer("totalAppointments").default(0).notNull(),
   totalSpent: numeric("totalSpent", { precision: 10, scale: 2 }).default("0").notNull(),
   lastAppointmentAt: timestamp("lastAppointmentAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -135,19 +136,19 @@ export type InsertClient = typeof clients.$inferInsert;
 
 export const appointments = pgTable("appointments", {
   id: serial("id").primaryKey(),
-  userId: serial("userId").notNull(),
-  clientId: serial("clientId").notNull(),
+  userId: integer("userId").notNull(),
+  clientId: integer("clientId").notNull(),
   clientName: varchar("clientName", { length: 255 }).notNull(),
   clientEmail: varchar("clientEmail", { length: 320 }).notNull(),
   clientPhone: varchar("clientPhone", { length: 20 }),
   appointmentType: varchar("appointmentType", { length: 255 }).notNull(),
-  duration: serial("duration").notNull(),
+  duration: integer("duration").notNull(),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   status: appointmentStatusEnum("status").default("scheduled").notNull(),
   startTime: timestamp("startTime").notNull(),
   endTime: timestamp("endTime").notNull(),
   notes: text("notes"),
-  paymentId: serial("paymentId"),
+  paymentId: integer("paymentId"),
   paymentStatus: appointmentPaymentStatusEnum("paymentStatus").default("pending").notNull(),
   isTrialBooking: boolean("isTrialBooking").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -156,3 +157,18 @@ export const appointments = pgTable("appointments", {
 
 export type Appointment = typeof appointments.$inferSelect;
 export type InsertAppointment = typeof appointments.$inferInsert;
+
+export const availability = pgTable(
+  "availability",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId").notNull(),
+    dayOfWeek: integer("dayOfWeek").notNull(), // 0=Sun, 1=Mon, ..., 6=Sat
+    startTime: varchar("startTime", { length: 5 }).notNull().default("09:00"),
+    endTime: varchar("endTime", { length: 5 }).notNull().default("17:00"),
+    isEnabled: boolean("isEnabled").default(true).notNull(),
+  },
+  t => [unique("availability_user_day").on(t.userId, t.dayOfWeek)]
+);
+
+export type Availability = typeof availability.$inferSelect;
