@@ -468,6 +468,24 @@ const en = {
     comingSoon: '{{label}} integration coming soon',
   },
 
+  login: {
+    welcomeBack: 'Welcome back',
+    createAccount: 'Create account',
+    tabs: { signin: 'Sign In', signup: 'Sign Up', magic: 'Magic Link' },
+    email: 'Email',
+    emailPlaceholder: 'you@example.com',
+    password: 'Password',
+    signIn: 'Sign In',
+    signUpFree: 'Sign up free',
+    noAccount: "Don't have an account?",
+    sendMagicLink: 'Send Magic Link',
+    loading: 'Loading…',
+    checkEmail: 'Check your email to confirm your account.',
+    checkInbox: 'Check your inbox',
+    magicSent: 'We sent a sign-in link to {{email}}',
+    tryAgain: 'Try again',
+  },
+
   themes: {
     forest: 'Forest',
     ocean: 'Ocean',

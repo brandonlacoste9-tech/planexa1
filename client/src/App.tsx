@@ -22,6 +22,7 @@ const PaymentsPage = lazy(() => import("./pages/Payments"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
+const LoginPage = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function RequireAuth({ component: Component }: { component: React.ComponentType }) {
@@ -52,6 +53,7 @@ function Router() {
           <Route path="/payment-success" component={PaymentSuccess} />
           <Route path="/payment-canceled" component={PaymentCanceled} />
           <Route path="/notification-settings">{() => <RequireAuth component={NotificationSettings} />}</Route>
+          <Route path="/login" component={LoginPage} />
           <Route path="/book/:slug" component={BookingPage} />
           <Route path="/404" component={NotFound} />
           <Route component={NotFound} />

@@ -468,6 +468,24 @@ const fr = {
     comingSoon: 'Intégration {{label}} bientôt disponible',
   },
 
+  login: {
+    welcomeBack: 'Content de te revoir',
+    createAccount: 'Créer un compte',
+    tabs: { signin: 'Connexion', signup: "S'inscrire", magic: 'Lien magique' },
+    email: 'Courriel',
+    emailPlaceholder: 'toi@exemple.com',
+    password: 'Mot de passe',
+    signIn: 'Se connecter',
+    signUpFree: "S'inscrire gratuitement",
+    noAccount: "T'as pas de compte?",
+    sendMagicLink: 'Envoyer le lien magique',
+    loading: 'Chargement…',
+    checkEmail: 'Vérifie ton courriel pour confirmer ton compte.',
+    checkInbox: 'Vérifie ta boîte de réception',
+    magicSent: "On t'a envoyé un lien de connexion à {{email}}",
+    tryAgain: 'Réessayer',
+  },
+
   themes: {
     forest: 'Forêt',
     ocean: 'Océan',
