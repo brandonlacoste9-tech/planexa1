@@ -1,14 +1,46 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Mail, Lock, ArrowRight, CheckCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseConfigured } from '@/lib/supabase';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
 type Mode = 'signin' | 'signup' | 'magic';
 
+function NotConfigured() {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--plx-bg)', fontFamily: 'DM Sans, sans-serif' }}>
+      <div className="w-full max-w-sm text-center">
+        <a href="/">
+          <span style={{ fontFamily: 'Fraunces, serif', color: 'var(--plx-primary)', fontStyle: 'italic', fontWeight: 300 }} className="text-3xl">
+            planexa
+          </span>
+        </a>
+        <div className="mt-8 rounded-2xl p-6" style={{ backgroundColor: 'white', border: '1px solid var(--plx-border)' }}>
+          <div className="text-2xl mb-3">⚙️</div>
+          <h2 className="font-semibold text-sm mb-2" style={{ color: '#1E293B' }}>Auth not configured</h2>
+          <p className="text-xs leading-relaxed mb-4" style={{ color: '#64748B' }}>
+            Add these 3 environment variables in your{' '}
+            <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--plx-primary)' }}>Vercel dashboard</a>:
+          </p>
+          <div className="text-left rounded-lg p-3 space-y-1" style={{ backgroundColor: '#F8FAFC', border: '1px solid var(--plx-border)' }}>
+            {['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY'].map(v => (
+              <code key={v} className="block text-xs" style={{ color: '#2D6A4F' }}>{v}</code>
+            ))}
+          </div>
+          <p className="text-xs mt-3" style={{ color: '#94A3B8' }}>
+            Find these in Supabase → Project Settings → API
+          </p>
+        </div>
+        <a href="/" className="block mt-4 text-xs" style={{ color: '#94A3B8' }}>← Back to home</a>
+      </div>
+    </div>
+  );
+}
+
 export default function Login() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  if (!supabaseConfigured) return <NotConfigured />;
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,9 +65,9 @@ export default function Login() {
     try {
       let result;
       if (mode === 'signup') {
-        result = await supabase.auth.signUp({ email, password });
+        result = await supabase!.auth.signUp({ email, password });
       } else {
-        result = await supabase.auth.signInWithPassword({ email, password });
+        result = await supabase!.auth.signInWithPassword({ email, password });
       }
 
       if (result.error) {
@@ -64,7 +96,7 @@ export default function Login() {
     if (!email) return;
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase!.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
