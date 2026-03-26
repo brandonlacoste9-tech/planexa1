@@ -6,6 +6,7 @@ import { useAuth } from '@/_core/hooks/useAuth';
 import { Link } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Users, BarChart2, Settings, ArrowRight, Check, Star } from 'lucide-react';
+import { getLoginUrl } from '@/const';
 
 const HERO_BG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663463499911/XkFRBSJqRpfu5RhGJQf3Nn/planexa-hero-bg-DDUhr6nNsPQdWN2ua6Nxbe.webp';
 const DASHBOARD_IMG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663463499911/XkFRBSJqRpfu5RhGJQf3Nn/planexa-dashboard-preview-Cc5Hkd2TnQSbo2V6yNAnrB.webp';
@@ -107,22 +108,24 @@ export default function Home() {
             </>
           ) : (
             <>
-              <Link
-                href="/calendar"
+              <a
+                href={getLoginUrl()}
                 className="text-sm px-3 py-1.5 rounded-md transition-colors"
                 style={{ color: '#94A3B8', fontFamily: 'DM Sans, sans-serif' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#52B788')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#94A3B8')}
               >
                 {t('home.nav.signIn')}
-              </Link>
-              <Link
-                href="/calendar"
+              </a>
+              <a
+                href={getLoginUrl()}
                 className="text-sm px-3 py-1.5 rounded-md transition-colors"
                 style={{ backgroundColor: '#2D6A4F', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
                 onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D6A4F')}
               >
                 {t('home.nav.getStarted')}
-              </Link>
+              </a>
             </>
           )}
         </div>
@@ -160,8 +163,8 @@ export default function Home() {
               {t('home.hero.subheadline')}
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/calendar"
+              <a
+                href={isAuthenticated ? '/calendar' : getLoginUrl()}
                 className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all"
                 style={{ backgroundColor: '#2D6A4F', color: 'white' }}
                 onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
@@ -169,7 +172,7 @@ export default function Home() {
               >
                 {t('home.hero.openDashboard')}
                 <ArrowRight size={14} />
-              </Link>
+              </a>
               <Link
                 href="/book/jmitchell"
                 className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all"
@@ -430,14 +433,15 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <Link
-                  href="/calendar"
+                <a
+                  href={getLoginUrl()}
                   className="block w-full py-2.5 rounded-xl text-sm font-medium text-center transition-colors"
                   style={{
                     backgroundColor: plan.highlighted ? '#2D6A4F' : 'transparent',
                     color: plan.highlighted ? 'white' : '#2D6A4F',
                     border: plan.highlighted ? 'none' : '1px solid #2D6A4F',
                     fontFamily: 'DM Sans, sans-serif',
+                    textDecoration: 'none',
                   }}
                   onMouseEnter={e => {
                     if (plan.highlighted) e.currentTarget.style.backgroundColor = '#40916C';
@@ -449,7 +453,7 @@ export default function Home() {
                   }}
                 >
                   {plan.cta}
-                </Link>
+                </a>
               </div>
             ))}
           </div>
@@ -471,8 +475,8 @@ export default function Home() {
           <p className="text-base mb-8" style={{ color: '#94A3B8' }}>
             {t('home.cta.subtitle')}
           </p>
-          <Link
-            href="/calendar"
+          <a
+            href={getLoginUrl()}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all"
             style={{ backgroundColor: '#52B788', color: 'white', fontFamily: 'DM Sans, sans-serif' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#40916C')}
@@ -480,7 +484,7 @@ export default function Home() {
           >
             {t('home.pricing.startTrial')}
             <ArrowRight size={14} />
-          </Link>
+          </a>
         </div>
       </section>
 

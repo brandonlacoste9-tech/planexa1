@@ -3,13 +3,14 @@
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Route, Switch, Redirect } from "wouter";
-import { lazy, Suspense } from "react";
+import { Route, Switch } from "wouter";
+import { lazy, Suspense, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PageLoader from "./components/PageLoader";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { RouteSeo } from "./components/seo/RouteSeo";
 import { useAuth } from "./_core/hooks/useAuth";
+import { getLoginUrl } from "./const";
 
 const Home = lazy(() => import("./pages/Home"));
 const CalendarPage = lazy(() => import("./pages/Calendar"));
@@ -25,8 +26,14 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 function RequireAuth({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, loading } = useAuth();
-  if (loading) return <PageLoader />;
-  if (!isAuthenticated) return <Redirect to="/" />;
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      window.location.href = getLoginUrl();
+    }
+  }, [loading, isAuthenticated]);
+
+  if (loading || !isAuthenticated) return <PageLoader />;
   return <Component />;
 }
 
