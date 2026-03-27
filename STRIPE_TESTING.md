@@ -21,7 +21,12 @@ The following tables have been created:
 - **users** table: Added `stripeCustomerId` column to link users to Stripe customers
 - **payments** table: Stores payment transaction records with Stripe IDs
 
-Run migrations with:
+Apply committed migrations (production and team setups):
+```bash
+pnpm db:migrate
+```
+
+For local dev you can sync the schema without new migration files (use with care):
 ```bash
 pnpm db:push
 ```

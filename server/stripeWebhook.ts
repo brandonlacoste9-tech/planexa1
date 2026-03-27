@@ -15,6 +15,12 @@ import { stripe } from './stripeClient';
  * This endpoint receives POST requests from Stripe when events occur
  */
 export async function handleStripeWebhook(req: Request, res: Response) {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+  if (process.env.NODE_ENV === "production" && !webhookSecret) {
+    console.error("[Stripe Webhook] STRIPE_WEBHOOK_SECRET is not configured");
+    return res.status(503).send("Webhook misconfigured");
+  }
+
   const sig = req.headers['stripe-signature'] as string;
 
   let event: Stripe.Event;
@@ -23,7 +29,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ''
+      webhookSecret ?? ''
     );
   } catch (err) {
     console.error('[Stripe Webhook] Signature verification failed:', err);

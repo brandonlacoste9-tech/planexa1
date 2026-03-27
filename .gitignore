@@ -111,3 +111,12 @@ temp/
 
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
+
+# E2E / Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Local debug logs (Vite Manus collector)
+.manus-logs/

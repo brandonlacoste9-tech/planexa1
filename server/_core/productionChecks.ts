@@ -39,4 +39,10 @@ export function logProductionWarnings(): void {
       "[Production] OAUTH_SERVER_URL and/or VITE_APP_ID missing; login may not work."
     );
   }
+
+  if (!process.env.RESEND_API_KEY?.trim()) {
+    console.warn(
+      "[Production] RESEND_API_KEY is not set; transactional email will be skipped."
+    );
+  }
 }
